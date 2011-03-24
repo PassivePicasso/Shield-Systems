@@ -46,24 +46,6 @@ public class ShieldSystems extends JavaPlugin {
     }
 
     /**
-     * Connect player.
-     *
-     * @param player the player
-     */
-    public void connectPlayer( Player player ) {
-        this.playerListener.addPlayer(player);
-    }
-
-    /**
-     * Disconnect player.
-     *
-     * @param player the player
-     */
-    public void disconnectPlayer( Player player ) {
-        this.playerListener.removePlayer(player);
-    }
-
-    /**
      * Checks if is debugging.
      *
      * @param player the player
@@ -90,8 +72,9 @@ public class ShieldSystems extends JavaPlugin {
      */
     @Override
     public void onEnable() {
+        prettyLog(Level.INFO,false,"Enable Beginning.");
         registerEvents();
-        prettyLog(Level.INFO,true,"Load Completed.");
+        prettyLog(Level.INFO,true,"Enable Completed.");
     }
 
     /* (non-Javadoc)
@@ -104,6 +87,11 @@ public class ShieldSystems extends JavaPlugin {
         scheduler = this.getServer().getScheduler();
         PluginDescriptionFile pdfFile = this.getDescription();
         prettyLog(Level.INFO,true, pdfFile.getAuthors() + "Load Beginning.");
+        // If there is any setup the plugin needs done before registration of events 
+        // and the likes, it should go here. Things like connecting to databses,
+        // reading config files, or anything that does not involve external plugins
+        // or commands.
+        prettyLog(Level.INFO,false,"Load Completed.");
     }
 
     /**
