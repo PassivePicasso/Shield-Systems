@@ -68,62 +68,65 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
             Block block = event.getClickedBlock();
             Player player = event.getPlayer();
             ItemStack item = event.getItem();
-
-            if (item.getType().equals(Material.STICK) && block.getType().equals(Material.DIRT)) {
-                if (!this.constructingForcefield.get(player)) {
-                    this.constructingForcefield.put(player, true);
-                    player.sendMessage("Emitter Construction has begun.");
-                } else {
-                    this.constructingForcefield.put(player, false);
-                    player.sendMessage("Emitter Construction has ended.");
-                }
-            }
-
-            if (item.getType().equals(Material.STICK) && this.constructingForcefield.get(player)) {
-                Sign sign = block.getRelative(1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(1, 0, 0).getState()
-                    : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
-                    : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
-                    : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
-
-                if (sign != null) {
-                    DomeEmitter emitter = new DomeEmitter(block, sign);
-                    if (domeEmitters.contains(emitter)) {
-                        emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
-                        if (emitter.isActive()) {
-                            emitter.pulse();
-                        }
+            if (item != null)
+            {
+                if (item.getType() == Material.STICK && block.getType() == Material.DIRT) {
+                    if (!this.constructingForcefield.get(player)) {
+                        this.constructingForcefield.put(player, true);
+                        player.sendMessage("Emitter Construction has begun.");
+                    } else {
+                        this.constructingForcefield.put(player, false);
+                        player.sendMessage("Emitter Construction has ended.");
                     }
                 }
-            }
 
-            if (this.constructingForcefield.get(player)) {
-                if (item.getType().equals(Material.WOOD_SWORD) && block.getType().equals(Material.SAND)) {
+                if (item.getType().equals(Material.STICK) && this.constructingForcefield.get(player)) {
                     Sign sign = block.getRelative(1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(1, 0, 0).getState()
                         : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
-                        : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
-                        : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
+                            : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
+                                : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
 
-                    if (sign != null) {
-                        DomeEmitter emitter = new DomeEmitter(block, sign);
-                        if (domeEmitters.contains(emitter)) {
-                            emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
-                            if (emitter.isActive()) {
-                                emitter.deactivate();
-                            } else {
-                                emitter.activate();
-                            }
-                        } else {
-                            if (emitter.isActive()) {
-                                emitter.deactivate();
-                            } else {
-                                emitter.activate();
-                            }
-                            plugin.blockListener.addEmitter(emitter);
-                        }
+                                if (sign != null) {
+                                    DomeEmitter emitter = new DomeEmitter(block, sign);
+                                    if (domeEmitters.contains(emitter)) {
+                                        emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
+                                        if (emitter.isActive()) {
+                                            emitter.pulse();
+                                        }
+                                    }
+                                }
+                }
+
+                if (this.constructingForcefield.get(player)) {
+                    if (item.getType().equals(Material.WOOD_SWORD) && block.getType().equals(Material.SAND)) {
+                        Sign sign = block.getRelative(1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(1, 0, 0).getState()
+                            : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
+                                : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
+                                    : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
+
+                                    if (sign != null) {
+                                        DomeEmitter emitter = new DomeEmitter(block, sign);
+                                        if (domeEmitters.contains(emitter)) {
+                                            emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
+                                            if (emitter.isActive()) {
+                                                emitter.deactivate();
+                                            } else {
+                                                emitter.activate();
+                                            }
+                                        } else {
+                                            if (emitter.isActive()) {
+                                                emitter.deactivate();
+                                            } else {
+                                                emitter.activate();
+                                            }
+                                            plugin.blockListener.addEmitter(emitter);
+                                        }
+                                    }
                     }
                 }
             }
         }
+
     }
 
     /* (non-Javadoc)
