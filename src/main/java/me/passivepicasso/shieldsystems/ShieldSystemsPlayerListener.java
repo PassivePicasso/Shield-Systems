@@ -1,4 +1,4 @@
-package org.PassivePicasso.ShieldSystems;
+package me.passivepicasso.shieldsystems;
 
 import java.util.ArrayList;
 import java.util.HashMap;
