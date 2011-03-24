@@ -1,4 +1,5 @@
 name: ShieldSystems
 main: me.passivepicasso.shieldsystems.ShieldSystems
 version: 0.0.1
+author: PassivePicasso
 description : Minecraft Server mod to allow users to create Shield systems.
