@@ -72,7 +72,7 @@ public class ShieldSystems extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        prettyLog(Level.INFO,false,"Enable Beginning.");
+        prettyLog(Level.INFO,true,"Enable Beginning.");
         registerEvents();
         prettyLog(Level.INFO,true,"Enable Completed.");
     }
@@ -91,7 +91,7 @@ public class ShieldSystems extends JavaPlugin {
         // and the likes, it should go here. Things like connecting to databses,
         // reading config files, or anything that does not involve external plugins
         // or commands.
-        prettyLog(Level.INFO,false,"Load Completed.");
+        prettyLog(Level.INFO,true,"Load Completed.");
     }
 
     /**
