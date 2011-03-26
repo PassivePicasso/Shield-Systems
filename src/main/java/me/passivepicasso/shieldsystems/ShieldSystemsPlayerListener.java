@@ -18,21 +18,22 @@ import org.bukkit.inventory.ItemStack;
 // TODO: Auto-generated Javadoc
 /**
  * Handle events for all Player related events.
- *
+ * 
  * @author PassivePicasso
  */
 public class ShieldSystemsPlayerListener extends PlayerListener {
-    
+
     /** The plugin. */
-    private final ShieldSystems	plugin;
+    private final ShieldSystems plugin;
 
     /** The constructing forcefield. */
-    HashMap<Player, Boolean> constructingForcefield	= new HashMap<Player, Boolean>();
+    HashMap<Player, Boolean>    constructingForcefield = new HashMap<Player, Boolean>();
 
     /**
      * Instantiates a new shield systems player listener.
-     *
-     * @param instance the instance
+     * 
+     * @param instance
+     *            the instance
      */
     public ShieldSystemsPlayerListener( ShieldSystems instance ) {
         this.plugin = instance;
@@ -40,8 +41,9 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
 
     /**
      * Adds the player.
-     *
-     * @param player the player
+     * 
+     * @param player
+     *            the player
      */
     public void addPlayer( Player player ) {
         this.constructingForcefield.put(player, false);
@@ -49,16 +51,21 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
 
     /**
      * Checks if is player constructing.
-     *
-     * @param player the player
+     * 
+     * @param player
+     *            the player
      * @return true, if is player constructing
      */
     public boolean isPlayerConstructing( Player player ) {
         return constructingForcefield.get(player);
     }
 
-    /* (non-Javadoc)
-     * @see org.bukkit.event.player.PlayerListener#onPlayerInteract(org.bukkit.event.player.PlayerInteractEvent)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.bukkit.event.player.PlayerListener#onPlayerInteract(org.bukkit.event
+     * .player.PlayerInteractEvent)
      */
     @Override
     public void onPlayerInteract( PlayerInteractEvent event ) {
@@ -68,9 +75,8 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
             Block block = event.getClickedBlock();
             Player player = event.getPlayer();
             ItemStack item = event.getItem();
-            if (item != null)
-            {
-                if (item.getType() == Material.STICK && block.getType() == Material.DIRT) {
+            if (item != null) {
+                if ((item.getType() == Material.STICK) && (block.getType() == Material.DIRT)) {
                     if (!this.constructingForcefield.get(player)) {
                         this.constructingForcefield.put(player, true);
                         player.sendMessage("Emitter Construction has begun.");
@@ -82,46 +88,46 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
 
                 if (item.getType().equals(Material.STICK) && this.constructingForcefield.get(player)) {
                     Sign sign = block.getRelative(1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(1, 0, 0).getState()
-                        : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
-                            : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
-                                : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
+                            : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
+                                    : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
+                                            : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
 
-                                if (sign != null) {
-                                    DomeEmitter emitter = new DomeEmitter(block, sign);
-                                    if (domeEmitters.contains(emitter)) {
-                                        emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
-                                        if (emitter.isActive()) {
-                                            emitter.pulse();
-                                        }
-                                    }
-                                }
+                    if (sign != null) {
+                        DomeEmitter emitter = new DomeEmitter(block, sign);
+                        if (domeEmitters.contains(emitter)) {
+                            emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
+                            if (emitter.isActive()) {
+                                emitter.pulse();
+                            }
+                        }
+                    }
                 }
 
                 if (this.constructingForcefield.get(player)) {
                     if (item.getType().equals(Material.WOOD_SWORD) && block.getType().equals(Material.SAND)) {
                         Sign sign = block.getRelative(1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(1, 0, 0).getState()
-                            : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
-                                : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
-                                    : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
+                                : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
+                                        : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
+                                                : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
 
-                                    if (sign != null) {
-                                        DomeEmitter emitter = new DomeEmitter(block, sign);
-                                        if (domeEmitters.contains(emitter)) {
-                                            emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
-                                            if (emitter.isActive()) {
-                                                emitter.deactivate();
-                                            } else {
-                                                emitter.activate();
-                                            }
-                                        } else {
-                                            if (emitter.isActive()) {
-                                                emitter.deactivate();
-                                            } else {
-                                                emitter.activate();
-                                            }
-                                            plugin.blockListener.addEmitter(emitter);
-                                        }
-                                    }
+                        if (sign != null) {
+                            DomeEmitter emitter = new DomeEmitter(block, sign);
+                            if (domeEmitters.contains(emitter)) {
+                                emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
+                                if (emitter.isActive()) {
+                                    emitter.deactivate();
+                                } else {
+                                    emitter.activate();
+                                }
+                            } else {
+                                if (emitter.isActive()) {
+                                    emitter.deactivate();
+                                } else {
+                                    emitter.activate();
+                                }
+                                plugin.blockListener.addEmitter(emitter);
+                            }
+                        }
                     }
                 }
             }
@@ -129,8 +135,12 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
 
     }
 
-    /* (non-Javadoc)
-     * @see org.bukkit.event.player.PlayerListener#onPlayerJoin(org.bukkit.event.player.PlayerEvent)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.bukkit.event.player.PlayerListener#onPlayerJoin(org.bukkit.event.
+     * player.PlayerEvent)
      */
     @Override
     public void onPlayerJoin( PlayerEvent event ) {
@@ -138,8 +148,12 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
         addPlayer(player);
     }
 
-    /* (non-Javadoc)
-     * @see org.bukkit.event.player.PlayerListener#onPlayerMove(org.bukkit.event.player.PlayerMoveEvent)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.bukkit.event.player.PlayerListener#onPlayerMove(org.bukkit.event.
+     * player.PlayerMoveEvent)
      */
     @Override
     public void onPlayerMove( PlayerMoveEvent event ) {
@@ -149,6 +163,11 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
         for (DomeEmitter de : emitters) {
             ArrayList<Block> fields = new ArrayList<Block>();
             fields.addAll(de.getLocalBlocks(b));
+            for (Block block : de.getLocalBlocks(b)) {
+                if (!block.getType().equals(Material.AIR)) {
+                    fields.remove(block);
+                }
+            }
             if (fields.size() > 0) {
                 double deltaZ = event.getFrom().getZ() - event.getTo().getZ();
                 double deltaX = event.getFrom().getX() - event.getTo().getX();
@@ -159,27 +178,28 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
                 Player p = event.getPlayer();
                 Location l = new Location(p.getWorld(), deltaX, event.getFrom().getX() + event.getFrom().getY() + deltaY, event.getFrom().getZ() + deltaZ);
                 p.setVelocity(l.toVector());
-                // p.teleport(l);
-                // Vector v = event.getPlayer().getVelocity();
-                // v.multiply(-10);
-                // event.getPlayer().setVelocity(v);
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.bukkit.event.player.PlayerListener#onPlayerQuit(org.bukkit.event.player.PlayerEvent)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.bukkit.event.player.PlayerListener#onPlayerQuit(org.bukkit.event.
+     * player.PlayerEvent)
      */
     @Override
     public void onPlayerQuit( PlayerEvent event ) {
         Player player = event.getPlayer();
         removePlayer(player);
     }
-    
+
     /**
      * Removes the player.
-     *
-     * @param player the player
+     * 
+     * @param player
+     *            the player
      */
     public void removePlayer( Player player ) {
         this.constructingForcefield.remove(player);

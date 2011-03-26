@@ -65,6 +65,7 @@ public class ShieldSystems extends JavaPlugin {
      * 
      * @see org.bukkit.plugin.Plugin#onDisable()
      */
+    @Override
     public void onDisable() {
         prettyLog(Level.INFO, true, "Shutdown Completed.");
     }
@@ -74,6 +75,7 @@ public class ShieldSystems extends JavaPlugin {
      * 
      * @see org.bukkit.plugin.Plugin#onEnable()
      */
+    @Override
     public void onEnable() {
         prettyLog(Level.INFO, true, "Enable Beginning.");
         registerEvents();
