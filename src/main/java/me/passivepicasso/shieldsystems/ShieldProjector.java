@@ -92,7 +92,7 @@ public class ShieldProjector {
     public void ActivateShield() {
         generateShieldMatrix(8);
         for (Block b : shieldMatrix.getBlockMatrix()) {
-            b.setType(Material.GLOWSTONE);
+            b.setType(Material.GLASS);
         }
     }
 
