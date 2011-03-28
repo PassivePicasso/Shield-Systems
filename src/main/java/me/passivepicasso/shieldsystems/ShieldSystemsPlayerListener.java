@@ -9,11 +9,13 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Lever;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -28,6 +30,8 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
 
     /** The constructing forcefield. */
     HashMap<Player, Boolean>    constructingForcefield = new HashMap<Player, Boolean>();
+
+    ArrayList<ShieldProjector>  projectors             = new ArrayList<ShieldProjector>();
 
     /**
      * Instantiates a new shield systems player listener.
@@ -76,8 +80,9 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
             Player player = event.getPlayer();
             ItemStack item = event.getItem();
             if (item != null) {
+                Boolean isConstructing = this.constructingForcefield.get(player);
                 if ((item.getType() == Material.STICK) && (block.getType() == Material.DIRT)) {
-                    if (!this.constructingForcefield.get(player)) {
+                    if (!isConstructing) {
                         this.constructingForcefield.put(player, true);
                         player.sendMessage("Emitter Construction has begun.");
                     } else {
@@ -86,7 +91,7 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
                     }
                 }
 
-                if (item.getType().equals(Material.STICK) && this.constructingForcefield.get(player)) {
+                if (item.getType().equals(Material.STICK) && isConstructing) {
                     Sign sign = block.getRelative(1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(1, 0, 0).getState()
                             : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
                                     : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
@@ -103,30 +108,25 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
                     }
                 }
 
-                if (this.constructingForcefield.get(player)) {
-                    if (item.getType().equals(Material.WOOD_SWORD) && block.getType().equals(Material.SAND)) {
-                        Sign sign = block.getRelative(1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(1, 0, 0).getState()
-                                : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
-                                        : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
-                                                : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
-
-                        if (sign != null) {
-                            DomeEmitter emitter = new DomeEmitter(block, sign);
-                            if (domeEmitters.contains(emitter)) {
-                                emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
-                                if (emitter.isActive()) {
-                                    emitter.deactivate();
-                                } else {
-                                    emitter.activate();
-                                }
+                if (block.getType().equals(Material.LEVER)) {
+                    Lever lever = (Lever) block.getState().getData();
+                    if (isConstructing) {
+                        if (lever.isPowered()) {
+                            ShieldProjector sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModX(), lever.getAttachedFace()
+                                    .getModZ()));
+                            if (projectors.contains(sp)) {
+                                sp = projectors.get(projectors.indexOf(sp));
+                                sp.ActivateShield();
                             } else {
-                                if (emitter.isActive()) {
-                                    emitter.deactivate();
-                                } else {
-                                    emitter.activate();
-                                }
-                                plugin.blockListener.addEmitter(emitter);
+                                projectors.add(sp);
+                                sp.ActivateShield();
                             }
+                        }
+                    } else {
+                        ShieldProjector sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModX(), lever.getAttachedFace().getModZ()));
+                        if (projectors.contains(sp)) {
+                            sp = projectors.get(projectors.indexOf(sp));
+                            sp.ActivateShield();
                         }
                     }
                 }
@@ -143,7 +143,7 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
      * player.PlayerEvent)
      */
     @Override
-    public void onPlayerJoin( PlayerEvent event ) {
+    public void onPlayerJoin( PlayerJoinEvent event ) {
         Player player = event.getPlayer();
         addPlayer(player);
     }
@@ -162,9 +162,9 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
         emitters.addAll(plugin.blockListener.getEmitters());
         for (DomeEmitter de : emitters) {
             ArrayList<Block> fields = new ArrayList<Block>();
-            fields.addAll(de.getLocalBlocks(b));
-            for (Block block : de.getLocalBlocks(b)) {
-                if (!block.getType().equals(Material.AIR)) {
+            fields.addAll(de.getLocalFields(b));
+            for (Block block : de.getLocalFields(b)) {
+                if (block.getType().equals(Material.AIR)) {
                     fields.remove(block);
                 }
             }
@@ -172,9 +172,9 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
                 double deltaZ = event.getFrom().getZ() - event.getTo().getZ();
                 double deltaX = event.getFrom().getX() - event.getTo().getX();
                 double deltaY = event.getFrom().getY() - event.getTo().getY();
-                deltaY *= 2;
-                deltaX *= 2;
-                deltaZ *= 2;
+                deltaY *= 1.5;
+                deltaX *= 1.5;
+                deltaZ *= 1.5;
                 Player p = event.getPlayer();
                 Location l = new Location(p.getWorld(), deltaX, event.getFrom().getX() + event.getFrom().getY() + deltaY, event.getFrom().getZ() + deltaZ);
                 p.setVelocity(l.toVector());
@@ -190,7 +190,7 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
      * player.PlayerEvent)
      */
     @Override
-    public void onPlayerQuit( PlayerEvent event ) {
+    public void onPlayerQuit( PlayerQuitEvent event ) {
         Player player = event.getPlayer();
         removePlayer(player);
     }
