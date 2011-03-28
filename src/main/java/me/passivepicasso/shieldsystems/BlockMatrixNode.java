@@ -14,7 +14,7 @@ public class BlockMatrixNode {
 
     private final String                                                                world;
 
-    private Block                                                                       block;
+    private final Block                                                                 block;
 
     private BlockMatrixNode                                                             nextX;
     private BlockMatrixNode                                                             previousX;
@@ -68,7 +68,7 @@ public class BlockMatrixNode {
 
     public BlockMatrixNode( Block block, HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>> matrixNodes, Set<Material> include ) {
         this(block, matrixNodes);
-        this.filter = filter;
+        this.filter = include;
     }
 
     public void completeStructure() {

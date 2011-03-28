@@ -1,6 +1,5 @@
 package me.passivepicasso.shieldsystems;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -12,20 +11,21 @@ import org.bukkit.block.Dispenser;
 
 public class ShieldProjector {
 
-    private static final byte         NORTH              = 0x4;
+    private static final byte NORTH     = 0x4;
 
-    private static final byte         EAST               = 0x2;
+    private static final byte EAST      = 0x2;
 
-    private static final byte         SOUTH              = 0x5;
-    private static final byte         WEST               = 0x3;
-    private Dispenser                 dispenser          = null;
-    private Chest                     chest              = null;
-    private ArrayList<HashSet<Block>> layers             = new ArrayList<HashSet<Block>>();
-    private Block                     lava               = null;
-    private BlockMatrixNode           emitterStructure;
-    private BlockMatrixNode           shieldMatrix;
-    private int                       projectionDistance = 5;
-    private BlockFace                 facing;
+    private static final byte SOUTH     = 0x5;
+
+    private static final byte WEST      = 0x3;
+
+    private Dispenser         dispenser = null;
+    private Chest             chest     = null;
+    private Block             lava      = null;
+    private BlockMatrixNode   emitterStructure;
+    private BlockMatrixNode   shieldMatrix;
+    private BlockFace         facing;
+    private long              id;
 
     public ShieldProjector( Block block ) {
         emitterStructure = new BlockMatrixNode(block, new HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>>());
@@ -48,41 +48,31 @@ public class ShieldProjector {
                 lava = currentNode.getNextX().getBlock();
                 lavaNode = currentNode.getNextX();
                 facing = BlockFace.SOUTH;
-                if (!locateChest(SOUTH)) {
-                    creationFailed();
-                    return;
-                }
             }
         } else if ((dispenser.getRawData() == NORTH)) {
             if (currentNode.getPreviousX().getBlock().getType().equals(Material.STATIONARY_LAVA) || currentNode.getPreviousX().getBlock().getType().equals(Material.LAVA)) {
                 lava = currentNode.getPreviousX().getBlock();
                 lavaNode = currentNode.getPreviousX();
                 facing = BlockFace.NORTH;
-                if (!locateChest(NORTH)) {
-                    creationFailed();
-                    return;
-                }
             }
         } else if ((dispenser.getRawData() == WEST)) {
             if (currentNode.getNextZ().getBlock().getType().equals(Material.STATIONARY_LAVA) || currentNode.getNextZ().getBlock().getType().equals(Material.LAVA)) {
                 lava = currentNode.getNextZ().getBlock();
                 lavaNode = currentNode.getNextZ();
                 facing = BlockFace.WEST;
-                if (!locateChest(WEST)) {
-                    creationFailed();
-                    return;
-                }
+
             }
         } else if ((dispenser.getRawData() == EAST)) {
             if (currentNode.getPreviousZ().getBlock().getType().equals(Material.STATIONARY_LAVA) || currentNode.getPreviousZ().getBlock().getType().equals(Material.LAVA)) {
                 lava = currentNode.getPreviousZ().getBlock();
                 lavaNode = currentNode.getPreviousZ();
                 facing = BlockFace.EAST;
-                if (!locateChest(EAST)) {
-                    creationFailed();
-                    return;
-                }
             }
+        }
+
+        if (!locateChest()) {
+            creationFailed();
+            return;
         }
 
         if ((lava == null) || (lavaNode == null)) {
@@ -95,12 +85,14 @@ public class ShieldProjector {
             return;
         }
 
+        id = (block.getX() * block.getY() * block.getZ()) + (lava.getX() + lava.getY() + lava.getZ()) * dispenser.getX() * dispenser.getY() + (dispenser.getZ() * dispenser.getZ());
         emitterStructure.completeStructure();
     }
 
     public void ActivateShield() {
-        if (shieldMatrix == null) {
-            generateShieldMatrix(8);
+        generateShieldMatrix(8);
+        for (Block b : shieldMatrix.getBlockMatrix()) {
+            b.setType(Material.GLOWSTONE);
         }
     }
 
@@ -120,18 +112,7 @@ public class ShieldProjector {
             return false;
         }
         ShieldProjector other = (ShieldProjector) obj;
-        if (emitterStructure == null) {
-            if (other.emitterStructure != null) {
-                return false;
-            }
-        } else if (!emitterStructure.equals(other.emitterStructure)) {
-            return false;
-        }
-        if (shieldMatrix == null) {
-            if (other.shieldMatrix != null) {
-                return false;
-            }
-        } else if (!shieldMatrix.equals(other.shieldMatrix)) {
+        if (id != other.id) {
             return false;
         }
         return true;
@@ -141,8 +122,7 @@ public class ShieldProjector {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((emitterStructure == null) ? 0 : emitterStructure.hashCode());
-        result = prime * result + ((shieldMatrix == null) ? 0 : shieldMatrix.hashCode());
+        result = prime * result + (int) (id ^ (id >>> 32));
         return result;
     }
 
@@ -155,40 +135,6 @@ public class ShieldProjector {
         int zd = z - target.getZ();
         double distance = Math.sqrt(Math.pow(xd, 2) + Math.pow(yd, 2) + Math.pow(zd, 2));
         return distance;
-    }
-
-    private void generateShieldMatrix( BlockMatrixNode node ) {
-        if (node == null) {
-            return;
-        }
-        if (shieldMatrix == null) {
-            Block block = dispenser.getBlock();
-            for (int i = 0; i < projectionDistance; i++) {
-                block = block.getFace(facing);
-            }
-            shieldMatrix = node;
-        }
-        if (!node.hasNextY()) {
-            generateShieldMatrix(node.getNextY());
-        }
-        if (!node.hasPreviousY()) {
-            generateShieldMatrix(node.getPreviousY());
-        }
-        if ((facing == BlockFace.SOUTH) || (facing == BlockFace.NORTH)) {
-            if (!node.hasNextZ()) {
-                generateShieldMatrix(node.getNextZ());
-            }
-            if (!node.hasPreviousZ()) {
-                generateShieldMatrix(node.getPreviousZ());
-            }
-        } else if ((facing == BlockFace.EAST) || (facing == BlockFace.WEST)) {
-            if (!node.hasNextX()) {
-                generateShieldMatrix(node.getNextX());
-            }
-            if (!node.hasPreviousX()) {
-                generateShieldMatrix(node.getPreviousX());
-            }
-        }
     }
 
     private void generateShieldMatrix( int radius ) {
@@ -295,15 +241,15 @@ public class ShieldProjector {
         return block.getType().equals(Material.AIR);
     }
 
-    private boolean locateChest( byte direction ) {
+    private boolean locateChest() {
         BlockMatrixNode dispenser = emitterStructure.getNextY();
-        if ((direction == NORTH) || (direction == SOUTH)) {
+        if ((facing == BlockFace.NORTH) || (facing == BlockFace.SOUTH)) {
             if (dispenser.getNextZ().getBlock().getType().equals(Material.CHEST) || dispenser.getNextZ().getBlock().getState().equals(Chest.class)) {
                 chest = (Chest) dispenser.getNextZ().getBlock();
             } else if (dispenser.getPreviousZ().getBlock().getType().equals(Material.CHEST) || dispenser.getPreviousZ().getBlock().getState().equals(Chest.class)) {
                 chest = (Chest) dispenser.getNextZ().getBlock();
             }
-        } else if ((direction == EAST) || (direction == WEST)) {
+        } else if ((facing == BlockFace.EAST) || (facing == BlockFace.WEST)) {
             if (dispenser.getNextX().getBlock().getType().equals(Material.CHEST) || dispenser.getNextX().getBlock().getState().equals(Chest.class)) {
                 chest = (Chest) dispenser.getNextX().getBlock();
             } else if (dispenser.getPreviousX().getBlock().getType().equals(Material.CHEST) || dispenser.getPreviousX().getBlock().getState().equals(Chest.class)) {
