@@ -64,6 +64,23 @@ public class BlockMatrixNode {
             setPreviousZ(previousZ);
             previousZ.setNextZ(this);
         }
+
+        if (matrixNodes.containsKey(x)) {
+            if (matrixNodes.get(x).containsKey(y)) {
+                if (matrixNodes.get(x).get(y).containsKey(z)) {
+                    return;
+                } else {
+                    matrixNodes.get(x).get(y).put(z, this);
+                }
+            } else {
+                matrixNodes.get(x).put(y, new HashMap<Integer, BlockMatrixNode>());
+                matrixNodes.get(x).get(y).put(z, this);
+            }
+        } else {
+            matrixNodes.put(x, new HashMap<Integer, HashMap<Integer, BlockMatrixNode>>());
+            matrixNodes.get(x).put(y, new HashMap<Integer, BlockMatrixNode>());
+            matrixNodes.get(x).get(y).put(z, this);
+        }
     }
 
     public BlockMatrixNode( Block block, HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>> matrixNodes, Set<Material> include ) {

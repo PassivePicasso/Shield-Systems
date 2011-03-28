@@ -100,6 +100,12 @@ public class ShieldProjector {
         System.out.println("Failed to create projector.");
     }
 
+    public void DeactivateShield() {
+        for (Block b : shieldMatrix.getBlockMatrix()) {
+            b.setType(Material.AIR);
+        }
+    }
+
     @Override
     public boolean equals( Object obj ) {
         if (this == obj) {
@@ -234,6 +240,9 @@ public class ShieldProjector {
                     }
                 }
             }
+        }
+        if (map.size() > 0) {
+            System.out.println(map.size());
         }
     }
 

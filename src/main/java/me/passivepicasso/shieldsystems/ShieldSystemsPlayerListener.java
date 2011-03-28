@@ -110,24 +110,17 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
 
                 if (block.getType().equals(Material.LEVER)) {
                     Lever lever = (Lever) block.getState().getData();
-                    if (isConstructing) {
-                        if (lever.isPowered()) {
-                            ShieldProjector sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModX(), lever.getAttachedFace()
-                                    .getModZ()));
-                            if (projectors.contains(sp)) {
-                                sp = projectors.get(projectors.indexOf(sp));
-                                sp.ActivateShield();
-                            } else {
-                                projectors.add(sp);
-                                sp.ActivateShield();
-                            }
-                        }
+                    ShieldProjector sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModX(), lever.getAttachedFace().getModZ()));
+                    if (projectors.contains(sp)) {
+                        sp = projectors.get(projectors.indexOf(sp));
                     } else {
-                        ShieldProjector sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModX(), lever.getAttachedFace().getModZ()));
-                        if (projectors.contains(sp)) {
-                            sp = projectors.get(projectors.indexOf(sp));
-                            sp.ActivateShield();
-                        }
+                        projectors.add(sp);
+                        sp.ActivateShield();
+                    }
+                    if (lever.isPowered()) {
+                        sp.ActivateShield();
+                    } else {
+                        sp.DeactivateShield();
                     }
                 }
             }
