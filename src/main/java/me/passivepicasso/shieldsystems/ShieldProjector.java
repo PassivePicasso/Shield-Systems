@@ -241,9 +241,6 @@ public class ShieldProjector {
                 }
             }
         }
-        if (map.size() > 0) {
-            System.out.println(map.size());
-        }
     }
 
     private boolean isAir( Block block ) {
@@ -253,15 +250,15 @@ public class ShieldProjector {
     private boolean locateChest() {
         BlockMatrixNode dispenser = emitterStructure.getNextY();
         if ((facing == BlockFace.NORTH) || (facing == BlockFace.SOUTH)) {
-            if (dispenser.getNextZ().getBlock().getType().equals(Material.CHEST) || dispenser.getNextZ().getBlock().getState().equals(Chest.class)) {
+            if (dispenser.getNextZ().getBlock().getType().equals(Material.CHEST)) {
                 chest = (Chest) dispenser.getNextZ().getBlock();
-            } else if (dispenser.getPreviousZ().getBlock().getType().equals(Material.CHEST) || dispenser.getPreviousZ().getBlock().getState().equals(Chest.class)) {
+            } else if (dispenser.getPreviousZ().getBlock().getType().equals(Material.CHEST)) {
                 chest = (Chest) dispenser.getNextZ().getBlock();
             }
         } else if ((facing == BlockFace.EAST) || (facing == BlockFace.WEST)) {
-            if (dispenser.getNextX().getBlock().getType().equals(Material.CHEST) || dispenser.getNextX().getBlock().getState().equals(Chest.class)) {
+            if (dispenser.getNextX().getBlock().getType().equals(Material.CHEST)) {
                 chest = (Chest) dispenser.getNextX().getBlock();
-            } else if (dispenser.getPreviousX().getBlock().getType().equals(Material.CHEST) || dispenser.getPreviousX().getBlock().getState().equals(Chest.class)) {
+            } else if (dispenser.getPreviousX().getBlock().getType().equals(Material.CHEST)) {
                 chest = (Chest) dispenser.getPreviousX().getBlock().getState();
             }
         }
