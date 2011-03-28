@@ -115,7 +115,6 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
                         sp = projectors.get(projectors.indexOf(sp));
                     } else {
                         projectors.add(sp);
-                        sp.ActivateShield();
                     }
                     if (lever.isPowered()) {
                         sp.ActivateShield();
