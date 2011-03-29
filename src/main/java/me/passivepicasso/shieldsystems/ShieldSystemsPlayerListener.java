@@ -6,7 +6,6 @@ import java.util.HashMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -80,34 +79,6 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
             Player player = event.getPlayer();
             ItemStack item = event.getItem();
             if (item != null) {
-                Boolean isConstructing = this.constructingForcefield.get(player);
-                if ((item.getType() == Material.STICK) && (block.getType() == Material.DIRT)) {
-                    if (!isConstructing) {
-                        this.constructingForcefield.put(player, true);
-                        player.sendMessage("Emitter Construction has begun.");
-                    } else {
-                        this.constructingForcefield.put(player, false);
-                        player.sendMessage("Emitter Construction has ended.");
-                    }
-                }
-
-                if (item.getType().equals(Material.STICK) && isConstructing) {
-                    Sign sign = block.getRelative(1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(1, 0, 0).getState()
-                            : block.getRelative(-1, 0, 0).getState() instanceof Sign ? (Sign) block.getRelative(-1, 0, 0).getState()
-                                    : block.getRelative(0, 0, 1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, 1).getState()
-                                            : block.getRelative(0, 0, -1).getState() instanceof Sign ? (Sign) block.getRelative(0, 0, -1).getState() : null;
-
-                    if (sign != null) {
-                        DomeEmitter emitter = new DomeEmitter(block, sign);
-                        if (domeEmitters.contains(emitter)) {
-                            emitter = domeEmitters.get(domeEmitters.indexOf(emitter));
-                            if (emitter.isActive()) {
-                                emitter.pulse();
-                            }
-                        }
-                    }
-                }
-
                 if (block.getType().equals(Material.LEVER)) {
                     Lever lever = (Lever) block.getState().getData();
                     ShieldProjector sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModX(), lever.getAttachedFace().getModZ()));

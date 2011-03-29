@@ -20,7 +20,8 @@ public class ShieldProjector {
     private static final byte WEST      = 0x3;
 
     private Dispenser         dispenser = null;
-    private Chest             chest     = null;
+    private Chest             chestA    = null;
+    private Chest             chestB    = null;
     private Block             lava      = null;
     private BlockMatrixNode   emitterStructure;
     private BlockMatrixNode   shieldMatrix;
@@ -251,18 +252,20 @@ public class ShieldProjector {
         BlockMatrixNode dispenser = emitterStructure.getNextY();
         if ((facing == BlockFace.NORTH) || (facing == BlockFace.SOUTH)) {
             if (dispenser.getNextZ().getBlock().getType().equals(Material.CHEST)) {
-                chest = (Chest) dispenser.getNextZ().getBlock();
-            } else if (dispenser.getPreviousZ().getBlock().getType().equals(Material.CHEST)) {
-                chest = (Chest) dispenser.getNextZ().getBlock();
+                chestA = (Chest) dispenser.getNextZ().getBlock().getState();
+            }
+            if (dispenser.getPreviousZ().getBlock().getType().equals(Material.CHEST)) {
+                chestB = (Chest) dispenser.getPreviousZ().getBlock().getState();
             }
         } else if ((facing == BlockFace.EAST) || (facing == BlockFace.WEST)) {
             if (dispenser.getNextX().getBlock().getType().equals(Material.CHEST)) {
-                chest = (Chest) dispenser.getNextX().getBlock();
-            } else if (dispenser.getPreviousX().getBlock().getType().equals(Material.CHEST)) {
-                chest = (Chest) dispenser.getPreviousX().getBlock().getState();
+                chestA = (Chest) dispenser.getNextX().getBlock().getState();
+            }
+            if (dispenser.getPreviousX().getBlock().getType().equals(Material.CHEST)) {
+                chestB = (Chest) dispenser.getPreviousX().getBlock().getState();
             }
         }
-        return chest != null;
+        return (chestA != null) || (chestB != null);
     }
 
     private boolean verifyLavaContainmentIntegrity( BlockMatrixNode lavaNode ) {
