@@ -146,17 +146,14 @@ public class ShieldSystems extends JavaPlugin {
     private void registerEvents() {
         PluginManager pm = this.getServer().getPluginManager();
 
-        pm.registerEvent(Event.Type.BLOCK_PLACE, this.blockListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.BLOCK_DAMAGE, this.blockListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.BLOCK_DAMAGE, this.blockListener, Priority.Normal, this);
 
         // Listen for Player Joins and Quits at Monitor level. This way we are
         // seeing the final
         // decision of all other plugins on login and logout events.
-        pm.registerEvent(Event.Type.PLAYER_JOIN, this.playerListener, Priority.Monitor, this);
-        pm.registerEvent(Event.Type.PLAYER_QUIT, this.playerListener, Priority.Monitor, this);
-
         pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Priority.Normal, this);
-        pm.registerEvent(Event.Type.PLAYER_MOVE, this.playerListener, Priority.Normal, this);
+        // pm.registerEvent(Event.Type.PLAYER_MOVE, this.playerListener,
+        // Priority.Normal, this);
     }
 }

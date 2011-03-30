@@ -4,11 +4,9 @@ import java.util.HashSet;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockListener;
-import org.bukkit.event.block.BlockPlaceEvent;
 
 /**
  * Spellbooks block listener
@@ -16,6 +14,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
  * @author PassivePicasso
  */
 public class ShieldSystemsBlockListener extends BlockListener {
+    @SuppressWarnings("unused")
     private final ShieldSystems plugin;
 
     HashSet<DomeEmitter>        domeEmitters     = new HashSet<DomeEmitter>();
@@ -73,17 +72,6 @@ public class ShieldSystemsBlockListener extends BlockListener {
                 event.setInstaBreak(true);
                 onBlockBreak(new BlockBreakEvent(block, event.getPlayer()));
                 break;
-            }
-        }
-    }
-
-    @Override
-    public void onBlockPlace( BlockPlaceEvent event ) {
-        Player player = event.getPlayer();
-        Block block = event.getBlock();
-        if (plugin.playerListener.isPlayerConstructing(player)) {
-            if (block.getType().equals(Material.DIRT)) {
-
             }
         }
     }
