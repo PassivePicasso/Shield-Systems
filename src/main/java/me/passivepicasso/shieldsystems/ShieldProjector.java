@@ -121,6 +121,7 @@ public class ShieldProjector {
                         dispenser.getInventory().setItem(inventoryIndex, stack);
                     }
                 }
+                inventoryIndex = dispenser.getInventory().firstEmpty();
             }
         }
         return false;
