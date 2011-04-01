@@ -153,7 +153,6 @@ public class ShieldSystems extends JavaPlugin {
         // seeing the final
         // decision of all other plugins on login and logout events.
         pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Priority.Normal, this);
-        // pm.registerEvent(Event.Type.PLAYER_MOVE, this.playerListener,
-        // Priority.Normal, this);
+        pm.registerEvent(Event.Type.PLAYER_MOVE, this.playerListener, Priority.Normal, this);
     }
 }

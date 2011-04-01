@@ -14,47 +14,24 @@ import org.bukkit.event.block.BlockListener;
  * @author PassivePicasso
  */
 public class ShieldSystemsBlockListener extends BlockListener {
-    @SuppressWarnings("unused")
     private final ShieldSystems plugin;
 
-    HashSet<DomeEmitter>        domeEmitters     = new HashSet<DomeEmitter>();
     HashSet<Block>              underGoingDamage = new HashSet<Block>();
 
     public ShieldSystemsBlockListener( final ShieldSystems plugin ) {
         this.plugin = plugin;
     }
 
-    public void addEmitter( DomeEmitter emitter ) {
-        domeEmitters.add(emitter);
-    }
-
-    public HashSet<DomeEmitter> getEmitters() {
-        return domeEmitters;
-    }
-
     @Override
     public void onBlockBreak( BlockBreakEvent event ) {
-        DomeEmitter selection = null;
         Block block = event.getBlock();
-        for (DomeEmitter emitter : domeEmitters) {
-            selection = emitter.containsBlock(block) ? emitter : null;
-            if (selection != null) {
+        HashSet<Material> filter = new HashSet<Material>();
+        filter.add(Material.AIR);
+        for (ShieldProjector projector : plugin.playerListener.projectors) {
+            if (projector.setFocusBlock(block)) {
+                projector.setNeighborType(Material.WOOL, filter);
+                projector.setNeighborData((byte) 3, filter);
                 break;
-            }
-        }
-        if (selection == null) {
-            return;
-        }
-        final HashSet<Block> blocks = selection.getLocalFields(block);
-
-        for (Block b : blocks) {
-            if (b.getType().equals(Material.AIR) || b.equals(event.getBlock())) {
-                continue;
-            }
-            if (b.getType().equals(Material.GLASS)) {
-                b.setType(Material.WOOL);
-                b.setData((byte) 3);
-                selection.addEdgeBlock(b);
             }
         }
     }
@@ -64,11 +41,9 @@ public class ShieldSystemsBlockListener extends BlockListener {
         if (underGoingDamage.contains(event.getBlock())) {
             return;
         }
-        DomeEmitter selection = null;
         final Block block = event.getBlock();
-        for (DomeEmitter emitter : domeEmitters) {
-            selection = emitter.containsBlock(block) ? emitter : null;
-            if (selection != null) {
+        for (ShieldProjector projector : plugin.playerListener.projectors) {
+            if (projector.setFocusBlock(block)) {
                 event.setInstaBreak(true);
                 onBlockBreak(new BlockBreakEvent(block, event.getPlayer()));
                 break;

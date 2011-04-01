@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -22,9 +23,9 @@ import org.bukkit.material.Lever;
 public class ShieldSystemsPlayerListener extends PlayerListener {
 
     /** The plugin. */
-    private final ShieldSystems plugin;
+    // private final ShieldSystems plugin;
 
-    ArrayList<ShieldProjector>  projectors = new ArrayList<ShieldProjector>();
+    ArrayList<ShieldProjector> projectors = new ArrayList<ShieldProjector>();
 
     /**
      * Instantiates a new shield systems player listener.
@@ -33,7 +34,11 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
      *            the instance
      */
     public ShieldSystemsPlayerListener( ShieldSystems instance ) {
-        this.plugin = instance;
+        // this.plugin = instance;
+    }
+
+    public ArrayList<ShieldProjector> getProjectors() {
+        return projectors;
     }
 
     /*
@@ -45,8 +50,6 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
      */
     @Override
     public void onPlayerInteract( PlayerInteractEvent event ) {
-        final ArrayList<DomeEmitter> domeEmitters = new ArrayList<DomeEmitter>();
-        domeEmitters.addAll(plugin.blockListener.getEmitters());
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             Block block = event.getClickedBlock();
             ItemStack item = event.getItem();
@@ -79,27 +82,52 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
      */
     @Override
     public void onPlayerMove( PlayerMoveEvent event ) {
-        Block b = event.getPlayer().getWorld().getBlockAt(event.getTo());
-        ArrayList<DomeEmitter> emitters = new ArrayList<DomeEmitter>();
-        emitters.addAll(plugin.blockListener.getEmitters());
-        for (DomeEmitter de : emitters) {
-            ArrayList<Block> fields = new ArrayList<Block>();
-            fields.addAll(de.getLocalFields(b));
-            for (Block block : de.getLocalFields(b)) {
-                if (block.getType().equals(Material.AIR)) {
-                    fields.remove(block);
+        Block to = event.getPlayer().getWorld().getBlockAt(event.getTo());
+        Block from = event.getPlayer().getWorld().getBlockAt(event.getFrom());
+        Block block = null;
+
+        int modX = to.getX() - from.getX();
+        int modZ = to.getZ() - from.getZ();
+
+        BlockFace facing = null;
+        if (modX > 0) {
+            facing = BlockFace.SOUTH;
+        } else if (modX < 0) {
+            facing = BlockFace.NORTH;
+        } else if (modZ > 0) {
+            facing = BlockFace.EAST;
+        } else if (modZ < 0) {
+            facing = BlockFace.WEST;
+        }
+        if (facing == null) {
+            return;
+        }
+        switch (facing) {
+            case NORTH:
+            case SOUTH:
+                block = to.getWorld().getBlockAt(new Location(to.getWorld(), to.getX() + modX, to.getY(), to.getZ()));
+                break;
+            case EAST:
+            case WEST:
+                block = to.getWorld().getBlockAt(new Location(to.getWorld(), to.getX(), to.getY(), to.getZ() + modZ));
+                break;
+        }
+        if (block == null) {
+            return;
+        }
+        for (ShieldProjector projector : projectors) {
+            if (projector.setFocusBlock(block)) {
+                Location playerLocation = event.getPlayer().getLocation();
+                Location playerVectorLocation = new Location(to.getWorld(), playerLocation.getX() + modX, playerLocation.getY(), playerLocation.getZ() + modZ);
+                if (projector.distanceFromShield(playerVectorLocation) < 1.1) {
+                    double deltaZ = event.getFrom().getZ() - event.getTo().getZ();
+                    double deltaX = event.getFrom().getX() - event.getTo().getX();
+                    double deltaY = event.getFrom().getY() - event.getTo().getY();
+                    Player p = event.getPlayer();
+                    Location l = new Location(p.getWorld(), deltaX, event.getFrom().getX() + event.getFrom().getY() + deltaY, event.getFrom().getZ() + deltaZ);
+                    p.setVelocity(l.toVector());
+                    break;
                 }
-            }
-            if (fields.size() > 0) {
-                double deltaZ = event.getFrom().getZ() - event.getTo().getZ();
-                double deltaX = event.getFrom().getX() - event.getTo().getX();
-                double deltaY = event.getFrom().getY() - event.getTo().getY();
-                deltaY *= 1.5;
-                deltaX *= 1.5;
-                deltaZ *= 1.5;
-                Player p = event.getPlayer();
-                Location l = new Location(p.getWorld(), deltaX, event.getFrom().getX() + event.getFrom().getY() + deltaY, event.getFrom().getZ() + deltaZ);
-                p.setVelocity(l.toVector());
             }
         }
     }
