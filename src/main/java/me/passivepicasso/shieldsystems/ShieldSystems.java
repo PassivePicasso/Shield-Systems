@@ -30,10 +30,10 @@ public class ShieldSystems extends JavaPlugin {
     private final HashMap<Player, Boolean>   debugees       = new HashMap<Player, Boolean>();
 
     /** The scheduler. */
-    public static BukkitScheduler            scheduler      = null;
+    private static BukkitScheduler           scheduler      = null;
 
     /** The plugin. */
-    public static ShieldSystems              plugin         = null;
+    private static ShieldSystems             plugin         = null;
 
     /** The log. */
     private static Logger                    log            = null;
@@ -89,9 +89,9 @@ public class ShieldSystems extends JavaPlugin {
      */
     @Override
     public void onLoad() {
-        log = this.getServer().getLogger();
-        plugin = this;
-        scheduler = this.getServer().getScheduler();
+        setLog(getServer().getLogger());
+        setPlugin(this);
+        setScheduler(getServer().getScheduler());
         PluginDescriptionFile pdfFile = this.getDescription();
         prettyLog(Level.INFO, true, pdfFile.getAuthors() + "Load Beginning.");
         // If there is any setup the plugin needs done before registration of
@@ -154,5 +154,25 @@ public class ShieldSystems extends JavaPlugin {
         // decision of all other plugins on login and logout events.
         pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.PLAYER_MOVE, this.playerListener, Priority.Normal, this);
+    }
+
+    private static void setScheduler(BukkitScheduler scheduler) {
+        ShieldSystems.scheduler = scheduler;
+    }
+
+    public static BukkitScheduler getScheduler() {
+        return scheduler;
+    }
+
+    private static void setPlugin(ShieldSystems plugin) {
+        ShieldSystems.plugin = plugin;
+    }
+
+    public static ShieldSystems getPlugin() {
+        return plugin;
+    }
+    
+    private static void setLog(Logger log) {
+        ShieldSystems.log = log;
     }
 }
