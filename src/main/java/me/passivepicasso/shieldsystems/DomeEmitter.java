@@ -189,10 +189,10 @@ public class DomeEmitter {
                     isActive = true;
                     index = -1;
                 }
-                ShieldSystems.scheduler.scheduleSyncDelayedTask(ShieldSystems.plugin, this, 1);
+                ShieldSystems.getScheduler().scheduleSyncDelayedTask(ShieldSystems.getPlugin(), this, 1);
             }
         };
-        ShieldSystems.scheduler.scheduleSyncDelayedTask(ShieldSystems.plugin, r, 1);
+        ShieldSystems.getScheduler().scheduleSyncDelayedTask(ShieldSystems.getPlugin(), r, 1);
     }
 
     private double distance( Block target ) {

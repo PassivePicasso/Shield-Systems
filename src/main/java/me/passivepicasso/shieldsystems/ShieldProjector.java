@@ -92,7 +92,7 @@ public class ShieldProjector {
         emitterStructure.completeStructure();
     }
 
-    public void ActivateShield() {
+    public void activateShield() {
         generateShieldMatrix(8);
         for (Block b : shieldMatrix.getBlockMatrix()) {
             b.setType(Material.GLASS);
@@ -130,7 +130,7 @@ public class ShieldProjector {
         System.out.println("Failed to create projector.");
     }
 
-    public void DeactivateShield() {
+    public void deactivateShield() {
         for (Block b : shieldMatrix.getBlockMatrix()) {
             b.setType(Material.AIR);
         }
