@@ -12,7 +12,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
-// TODO: Auto-generated Javadoc
 /**
  * ShieldSystems for Bukkit.
  * 
@@ -20,11 +19,34 @@ import org.bukkit.scheduler.BukkitScheduler;
  */
 public class ShieldSystems extends JavaPlugin {
 
+    public static ShieldSystems getPlugin() {
+        return plugin;
+    }
+
+    public static BukkitScheduler getScheduler() {
+        return scheduler;
+    }
+
+    private static void setLog( Logger log ) {
+        ShieldSystems.log = log;
+    }
+
+    private static void setPlugin( ShieldSystems plugin ) {
+        ShieldSystems.plugin = plugin;
+    }
+
+    private static void setScheduler( BukkitScheduler scheduler ) {
+        ShieldSystems.scheduler = scheduler;
+    }
+
     /** The player listener. */
     public final ShieldSystemsPlayerListener playerListener = new ShieldSystemsPlayerListener(this);
 
     /** The block listener. */
     public final ShieldSystemsBlockListener  blockListener  = new ShieldSystemsBlockListener(this);
+
+    /** Currently for Debugging Only */
+    ShieldSystemsServerListener              serverListener = new ShieldSystemsServerListener(this);
 
     /** The debugees. */
     private final HashMap<Player, Boolean>   debugees       = new HashMap<Player, Boolean>();
@@ -148,31 +170,12 @@ public class ShieldSystems extends JavaPlugin {
 
         pm.registerEvent(Event.Type.BLOCK_DAMAGE, this.blockListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.BLOCK_DAMAGE, this.blockListener, Priority.Normal, this);
+        pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Priority.Highest, this);
 
         // Listen for Player Joins and Quits at Monitor level. This way we are
         // seeing the final
         // decision of all other plugins on login and logout events.
         pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.PLAYER_MOVE, this.playerListener, Priority.Normal, this);
-    }
-
-    private static void setScheduler(BukkitScheduler scheduler) {
-        ShieldSystems.scheduler = scheduler;
-    }
-
-    public static BukkitScheduler getScheduler() {
-        return scheduler;
-    }
-
-    private static void setPlugin(ShieldSystems plugin) {
-        ShieldSystems.plugin = plugin;
-    }
-
-    public static ShieldSystems getPlugin() {
-        return plugin;
-    }
-    
-    private static void setLog(Logger log) {
-        ShieldSystems.log = log;
     }
 }

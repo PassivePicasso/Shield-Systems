@@ -14,9 +14,8 @@ import org.bukkit.event.block.BlockListener;
  * @author PassivePicasso
  */
 public class ShieldSystemsBlockListener extends BlockListener {
+    @SuppressWarnings("unused")
     private final ShieldSystems plugin;
-
-    HashSet<Block>              underGoingDamage = new HashSet<Block>();
 
     public ShieldSystemsBlockListener( final ShieldSystems plugin ) {
         this.plugin = plugin;
@@ -24,31 +23,48 @@ public class ShieldSystemsBlockListener extends BlockListener {
 
     @Override
     public void onBlockBreak( BlockBreakEvent event ) {
-        Block block = event.getBlock();
-        HashSet<Material> filter = new HashSet<Material>();
-        filter.add(Material.AIR);
-        for (ShieldProjector projector : plugin.playerListener.projectors) {
-            if (projector.setFocusBlock(block)) {
-                projector.setNeighborType(Material.WOOL, filter);
-                projector.setNeighborData((byte) 3, filter);
+        final Block block = event.getBlock();
+        ShieldProjector projector = null;
+        for (ShieldProjector p : ShieldSystems.getPlugin().playerListener.projectors.values()) {
+            if (p.isShield(block)) {
+                projector = p;
                 break;
             }
+        }
+        if ((projector != null) && projector.setFocusBlock(block)) {
+            HashSet<Material> filter = new HashSet<Material>();
+            filter.add(Material.GLASS);
+            projector.setNeighborType(Material.WOOL, filter);
+            filter.clear();
+            filter.add(Material.WOOL);
+            projector.setNeighborData((byte) 3, filter);
+            final ShieldProjector projectorRef = projector;
+            ShieldSystems.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    if (projectorRef.burnFuel()) {
+                        projectorRef.regenerate();
+                    }
+                }
+            }, 8);
         }
     }
 
     @Override
     public void onBlockDamage( BlockDamageEvent event ) {
-        if (underGoingDamage.contains(event.getBlock())) {
-            return;
-        }
         final Block block = event.getBlock();
-        for (ShieldProjector projector : plugin.playerListener.projectors) {
-            if (projector.setFocusBlock(block)) {
-                event.setInstaBreak(true);
-                onBlockBreak(new BlockBreakEvent(block, event.getPlayer()));
+        HashSet<Material> filter = new HashSet<Material>();
+        filter.add(Material.AIR);
+        ShieldProjector projector = null;
+        for (ShieldProjector p : ShieldSystems.getPlugin().playerListener.projectors.values()) {
+            if (p.isShield(block)) {
+                projector = p;
                 break;
             }
         }
+        if ((projector != null) && projector.setFocusBlock(block)) {
+            event.setInstaBreak(true);
+            onBlockBreak(new BlockBreakEvent(block, event.getPlayer()));
+        }
     }
-
 }
