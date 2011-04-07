@@ -190,19 +190,25 @@ public class BlockMatrixNode {
 
     public Block getBlock() {
         if (block == null) {
+
         }
         return block;
     }
 
     public HashSet<Block> getBlockMatrix() {
         HashSet<Block> blocks = new HashSet<Block>();
-        for (Integer x : matrixNodes.keySet()) {
-            for (Integer y : matrixNodes.get(x).keySet()) {
-                for (Integer z : matrixNodes.get(x).get(y).keySet()) {
-                    blocks.add(matrixNodes.get(x).get(y).get(z).getBlock());
+        for (int i = 0; i < 10; i++) {
+            for (Integer x : matrixNodes.keySet()) {
+                for (Integer y : matrixNodes.get(x).keySet()) {
+
+                    for (Integer z : matrixNodes.get(x).get(y).keySet()) {
+                        blocks.add(matrixNodes.get(x).get(y).get(z).getBlock());
+                    }
                 }
             }
+            i = 0;
         }
+
         return blocks;
     }
 

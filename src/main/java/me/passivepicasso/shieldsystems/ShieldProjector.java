@@ -222,12 +222,17 @@ public class ShieldProjector {
             }
         }
         for (Block block : blocksToRegen) {
-            shieldMatrix = shieldMatrix.getMatrixNode(block);
-            HashSet<Material> secondaryFilter = new HashSet<Material>();
-            secondaryFilter.add(Material.AIR);
-            setNeighborType(Material.WOOL, secondaryFilter);
-            setNeighborData((byte) 3, secondaryFilter);
-            block.setType(Material.GLASS);
+            if (shieldMatrix.getBlockMatrix().contains(block)) {
+                BlockMatrixNode nextMatrix = shieldMatrix.getMatrixNode(block);
+                shieldMatrix = nextMatrix != null ? nextMatrix : shieldMatrix;
+                if (nextMatrix != null) {
+                    HashSet<Material> secondaryFilter = new HashSet<Material>();
+                    secondaryFilter.add(Material.AIR);
+                    setNeighborType(Material.WOOL, secondaryFilter);
+                    setNeighborData((byte) 3, secondaryFilter);
+                    block.setType(Material.GLASS);
+                }
+            }
         }
     }
 
@@ -238,8 +243,9 @@ public class ShieldProjector {
      */
     public boolean setFocusBlock( Block target ) {
         if (shieldMatrix.getBlockMatrix().contains(target)) {
-            shieldMatrix = shieldMatrix.getMatrixNode(target);
-            return shieldMatrix != null;
+            BlockMatrixNode nextMatrix = shieldMatrix.getMatrixNode(target);
+            shieldMatrix = nextMatrix != null ? nextMatrix : shieldMatrix;
+            return nextMatrix != null;
         }
         return false;
     }
