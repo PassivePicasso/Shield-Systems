@@ -56,9 +56,11 @@ public class ShieldSystemsBlockListener extends BlockListener {
         filter.add(Material.AIR);
         ShieldProjector projector = null;
         for (ShieldProjector p : ShieldSystems.getPlugin().playerListener.projectors.values()) {
-            if (p.setFocusBlock(block)) {
-                projector = p;
-                break;
+            if (p.isValid()) {
+                if (p.setFocusBlock(block)) {
+                    projector = p;
+                    break;
+                }
             }
         }
         if ((projector != null) && projector.setFocusBlock(block)) {

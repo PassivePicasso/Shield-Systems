@@ -13,24 +13,25 @@ import org.bukkit.inventory.ItemStack;
 
 public class ShieldProjector {
 
-    private static final byte NORTH     = 0x4;
+    private static final byte        NORTH     = 0x4;
 
-    private static final byte EAST      = 0x2;
+    private static final byte        EAST      = 0x2;
 
-    private static final byte SOUTH     = 0x5;
+    private static final byte        SOUTH     = 0x5;
 
-    private static final byte WEST      = 0x3;
+    private static final byte        WEST      = 0x3;
 
-    private Dispenser         dispenser = null;
-    private Chest             chestA    = null;
-    private Chest             chestB    = null;
-    private Block             lava      = null;
-    private BlockMatrixNode   emitterStructure;
-    private BlockMatrixNode   shieldMatrix;
-    private BlockFace         facing;
-    private int               radius    = 8;
+    private Dispenser                dispenser = null;
+    private Chest                    chestA    = null;
+    private Chest                    chestB    = null;
+    private Block                    lava      = null;
+    private BlockMatrixNode          emitterStructure;
+    private BlockMatrixNode          shieldMatrix;
+    private HashSet<BlockMatrixNode> shieldNodes;
+    private BlockFace                facing;
+    private int                      radius    = 8;
 
-    private long              id;
+    private long                     id;
 
     public ShieldProjector( Block block ) {
         emitterStructure = new BlockMatrixNode(block, new HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>>());
@@ -100,11 +101,12 @@ public class ShieldProjector {
         }
 
         id = (block.getX() * block.getY() * block.getZ()) + (lava.getX() + lava.getY() + lava.getZ()) * dispenser.getX() * dispenser.getY() + (dispenser.getZ() * dispenser.getZ());
-        emitterStructure.completeStructure();
+        emitterStructure.complete();
     }
 
     public void activateShield() {
         generateShieldMatrix();
+        shieldNodes = shieldMatrix.getBlockMatrixNodes();
         for (Block b : shieldMatrix.getBlockMatrix()) {
             b.setType(Material.GLASS);
         }
@@ -154,6 +156,15 @@ public class ShieldProjector {
     public void deactivateShield() {
         for (Block b : shieldMatrix.getBlockMatrix()) {
             b.setType(Material.AIR);
+        }
+    }
+
+    public void dispose() {
+        if (shieldMatrix != null) {
+            shieldMatrix.dispose();
+        }
+        if (emitterStructure != null) {
+            emitterStructure.dispose();
         }
     }
 
@@ -212,6 +223,10 @@ public class ShieldProjector {
         return shieldMatrix.getBlockMatrix().contains(block);
     }
 
+    public boolean isValid() {
+        return emitterStructure.isComplete();
+    }
+
     public void regenerate() {
         HashSet<Material> filter = new HashSet<Material>();
         filter.add(Material.WOOL);
@@ -242,6 +257,9 @@ public class ShieldProjector {
      * @return true if block has been targeted, otherwise false
      */
     public boolean setFocusBlock( Block target ) {
+        if (shieldMatrix == null) {
+            return false;
+        }
         if (shieldMatrix.getBlockMatrix().contains(target)) {
             BlockMatrixNode nextMatrix = shieldMatrix.getMatrixNode(target);
             shieldMatrix = nextMatrix != null ? nextMatrix : shieldMatrix;
@@ -338,7 +356,7 @@ public class ShieldProjector {
         Block block = emitterStructure.getBlock();
         HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>> map = new HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>>();
 
-        if ((shieldMatrix == null) || !shieldMatrix.isComplete()) {
+        if (shieldMatrix == null) {
             for (int y = 0; y <= radius; y++) {
                 for (int x = 0; x <= radius; x++) {
                     for (int z = 0; z <= radius; z++) {
@@ -385,7 +403,7 @@ public class ShieldProjector {
                     }
                 }
             }
-            shieldMatrix.completeStructure();
+            shieldMatrix.complete();
         }
     }
 

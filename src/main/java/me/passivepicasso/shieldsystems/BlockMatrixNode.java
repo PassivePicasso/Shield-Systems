@@ -1,5 +1,6 @@
 package me.passivepicasso.shieldsystems;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,6 +9,13 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+/**
+ * Warning, you must dispose this class in order to prevent a memory leak.
+ * use BlockMatrixNode.dispose()
+ * 
+ * @author Tobias
+ * 
+ */
 public class BlockMatrixNode {
     public enum Axis {
         X, Y, Z
@@ -148,8 +156,50 @@ public class BlockMatrixNode {
         return node != null;
     }
 
-    public void completeStructure() {
+    public void complete() {
         isComplete = true;
+        if (hasNorth() && !getNorth().isComplete()) {
+            getNorth().complete();
+        }
+        if (hasEast() && !getEast().isComplete()) {
+            getEast().complete();
+        }
+        if (hasSouth() && !getSouth().isComplete()) {
+            getSouth().complete();
+        }
+        if (hasWest() && !getWest().isComplete()) {
+            getWest().complete();
+        }
+    }
+
+    public void dispose() {
+        if (matrixNodes.size() > 0) {
+            matrixNodes.clear();
+        }
+        if (hasNorth()) {
+            getNorth().dispose();
+        }
+        if (hasEast()) {
+            getEast().dispose();
+        }
+        if (hasSouth()) {
+            getSouth().dispose();
+        }
+        if (hasWest()) {
+            getWest().dispose();
+        }
+        if (hasNorth()) {
+            setNorth(null);
+        }
+        if (hasEast()) {
+            setEast(null);
+        }
+        if (hasSouth()) {
+            setSouth(null);
+        }
+        if (hasWest()) {
+            setWest(null);
+        }
     }
 
     @Override
@@ -195,20 +245,15 @@ public class BlockMatrixNode {
         return block;
     }
 
-    public HashSet<Block> getBlockMatrix() {
-        HashSet<Block> blocks = new HashSet<Block>();
-        for (int i = 0; i < 10; i++) {
-            for (Integer x : matrixNodes.keySet()) {
-                for (Integer y : matrixNodes.get(x).keySet()) {
-
-                    for (Integer z : matrixNodes.get(x).get(y).keySet()) {
-                        blocks.add(matrixNodes.get(x).get(y).get(z).getBlock());
-                    }
+    public ArrayList<Block> getBlockMatrix() {
+        ArrayList<Block> blocks = new ArrayList<Block>();
+        for (Integer x : matrixNodes.keySet()) {
+            for (Integer y : matrixNodes.get(x).keySet()) {
+                for (Integer z : matrixNodes.get(x).get(y).keySet()) {
+                    blocks.add(matrixNodes.get(x).get(y).get(z).getBlock());
                 }
             }
-            i = 0;
         }
-
         return blocks;
     }
 
@@ -319,7 +364,7 @@ public class BlockMatrixNode {
     }
 
     public boolean hasEast() {
-        return nextZ != null;
+        return previousZ != null;
     }
 
     public boolean hasFilteredDown() {

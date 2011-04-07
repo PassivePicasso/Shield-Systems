@@ -54,11 +54,16 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
         if (block.getType().equals(Material.LEVER)) {
             Lever lever = (Lever) block.getState().getData();
             ShieldProjector sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModY(), lever.getAttachedFace().getModZ()));
-            projectors.put(block, sp);
-            if (!lever.isPowered()) {
-                sp.activateShield();
+            if (sp.isValid()) {
+                projectors.put(block, sp);
+                if (!lever.isPowered()) {
+                    sp.activateShield();
+                } else {
+                    sp.deactivateShield();
+                }
             } else {
-                sp.deactivateShield();
+                event.getPlayer().sendMessage("Shield System is not properly configured");
+                sp.dispose();
             }
         }
     }
