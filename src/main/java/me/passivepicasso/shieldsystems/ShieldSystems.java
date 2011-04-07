@@ -126,7 +126,6 @@ public class ShieldSystems extends JavaPlugin {
     }
 
     /**
-     * 
      * prettyLog: A quick and dirty way to make log output clean, unified, and
      * with versioning as needed.
      * 
@@ -136,7 +135,6 @@ public class ShieldSystems extends JavaPlugin {
      *            true causes version display in log entries.
      * @param message
      *            to prettyLog.
-     * 
      */
     public void prettyLog( Level severity, boolean version, String message ) {
         final String prettyName = ("[" + this.getDescription().getName() + "]");
@@ -167,14 +165,9 @@ public class ShieldSystems extends JavaPlugin {
      */
     private void registerEvents() {
         PluginManager pm = this.getServer().getPluginManager();
-
         pm.registerEvent(Event.Type.BLOCK_DAMAGE, this.blockListener, Priority.Normal, this);
-        pm.registerEvent(Event.Type.BLOCK_DAMAGE, this.blockListener, Priority.Normal, this);
+        pm.registerEvent(Event.Type.BLOCK_BREAK, this.blockListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Priority.Highest, this);
-
-        // Listen for Player Joins and Quits at Monitor level. This way we are
-        // seeing the final
-        // decision of all other plugins on login and logout events.
         pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.PLAYER_MOVE, this.playerListener, Priority.Normal, this);
     }

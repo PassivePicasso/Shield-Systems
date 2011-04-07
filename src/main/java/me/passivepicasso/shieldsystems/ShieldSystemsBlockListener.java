@@ -14,7 +14,6 @@ import org.bukkit.event.block.BlockListener;
  * @author PassivePicasso
  */
 public class ShieldSystemsBlockListener extends BlockListener {
-    @SuppressWarnings("unused")
     private final ShieldSystems plugin;
 
     public ShieldSystemsBlockListener( final ShieldSystems plugin ) {
@@ -57,7 +56,7 @@ public class ShieldSystemsBlockListener extends BlockListener {
         filter.add(Material.AIR);
         ShieldProjector projector = null;
         for (ShieldProjector p : ShieldSystems.getPlugin().playerListener.projectors.values()) {
-            if (p.isShield(block)) {
+            if (p.setFocusBlock(block)) {
                 projector = p;
                 break;
             }

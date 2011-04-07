@@ -48,6 +48,9 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
     @Override
     public void onPlayerInteract( PlayerInteractEvent event ) {
         Block block = event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
         if (block.getType().equals(Material.LEVER)) {
             Lever lever = (Lever) block.getState().getData();
             ShieldProjector sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModY(), lever.getAttachedFace().getModZ()));

@@ -318,6 +318,16 @@ public class ShieldProjector {
         this.radius = radius;
     }
 
+    private void attemptIntegration( Block target, HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>> map ) {
+        if (isAir(target)) {
+            if (shieldMatrix == null) {
+                shieldMatrix = new BlockMatrixNode(target, map);
+            } else {
+                new BlockMatrixNode(target, map);
+            }
+        }
+    }
+
     private void generateShieldMatrix() {
         Block block = emitterStructure.getBlock();
         HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>> map = new HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>>();
@@ -331,87 +341,39 @@ public class ShieldProjector {
                         if ((d <= (radius + 1)) && (d >= (radius - 1))) {
                             if (facing == BlockFace.NORTH) {
                                 target = block.getRelative(-x, y, z);
-                                if (isAir(target)) {
-                                    if (shieldMatrix == null) {
-                                        shieldMatrix = new BlockMatrixNode(target, map);
-                                    } else {
-                                        new BlockMatrixNode(target, map);
-                                    }
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(-x, -y, z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(-x, y, -z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(-x, -y, -z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                             } else if (facing == BlockFace.SOUTH) {
-                                if (isAir(target)) {
-                                    if (shieldMatrix == null) {
-                                        shieldMatrix = new BlockMatrixNode(target, map);
-                                    } else {
-                                        new BlockMatrixNode(target, map);
-                                    }
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(x, -y, z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(x, y, -z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(x, -y, -z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                             } else if (facing == BlockFace.EAST) {
                                 target = block.getRelative(-x, y, -z);
-                                if (isAir(target)) {
-                                    if (shieldMatrix == null) {
-                                        shieldMatrix = new BlockMatrixNode(target, map);
-                                    } else {
-                                        new BlockMatrixNode(target, map);
-                                    }
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(x, -y, -z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(x, y, -z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(-x, -y, -z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                             } else if (facing == BlockFace.WEST) {
                                 target = block.getRelative(-x, y, z);
-                                if (isAir(target)) {
-                                    if (shieldMatrix == null) {
-                                        shieldMatrix = new BlockMatrixNode(target, map);
-                                    } else {
-                                        new BlockMatrixNode(target, map);
-                                    }
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(x, -y, z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(x, y, z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                                 target = block.getRelative(-x, -y, z);
-                                if (isAir(target)) {
-                                    new BlockMatrixNode(target, map);
-                                }
+                                attemptIntegration(target, map);
                             }
                         }
                     }
