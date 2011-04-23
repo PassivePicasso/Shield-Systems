@@ -104,7 +104,9 @@ public class ShieldProjector {
     }
 
     public void activateShield() {
-        generateShieldMatrix();
+        if (shieldMatrix == null) {
+            generateShieldMatrix();
+        }
         for (BlockMatrixNode b : shieldMatrix.getBlockMatrixNodes()) {
             b.getBlock().setType(Material.GLASS);
         }
@@ -351,6 +353,9 @@ public class ShieldProjector {
     }
 
     private void generateShieldMatrix() {
+        if ((shieldMatrix != null) && shieldMatrix.isComplete()) {
+            return;
+        }
         Block block = emitterStructure.getBlock();
         HashMap<Block, BlockMatrixNode> map = new HashMap<Block, BlockMatrixNode>();
 
