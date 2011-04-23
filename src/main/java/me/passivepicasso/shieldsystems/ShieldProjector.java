@@ -37,7 +37,7 @@ public class ShieldProjector {
         HashSet<Material> filter = new HashSet<Material>();
 
         BlockMatrixNode currentNode = emitterStructure;
-        if (!currentNode.getBlock().getType().equals(Material.IRON_BLOCK)) {
+        if (currentNode.getBlock().getTypeId() != Material.IRON_BLOCK.getId()) {
             creationFailed();
             return;
         }
@@ -365,43 +365,47 @@ public class ShieldProjector {
                     for (int z = 0; z <= radius; z++) {
                         Block target = block.getRelative(x, y, z);
                         double d = distance(target);
-                        if ((d <= (radius + 1)) && (d >= (radius - 1))) {
-                            if (facing == BlockFace.NORTH) {
-                                target = block.getRelative(-x, y, z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(-x, -y, z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(-x, y, -z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(-x, -y, -z);
-                                attemptIntegration(target, map);
-                            } else if (facing == BlockFace.SOUTH) {
-                                attemptIntegration(target, map);
-                                target = block.getRelative(x, -y, z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(x, y, -z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(x, -y, -z);
-                                attemptIntegration(target, map);
-                            } else if (facing == BlockFace.EAST) {
-                                target = block.getRelative(-x, y, -z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(x, -y, -z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(x, y, -z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(-x, -y, -z);
-                                attemptIntegration(target, map);
-                            } else if (facing == BlockFace.WEST) {
-                                target = block.getRelative(-x, y, z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(x, -y, z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(x, y, z);
-                                attemptIntegration(target, map);
-                                target = block.getRelative(-x, -y, z);
-                                attemptIntegration(target, map);
-                            }
+                        if (d > (radius + 1)) {
+                            continue;
+                        }
+                        if (d < (radius - 1)) {
+                            continue;
+                        }
+                        if (facing == BlockFace.NORTH) {
+                            target = block.getRelative(-x, y, z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(-x, -y, z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(-x, y, -z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(-x, -y, -z);
+                            attemptIntegration(target, map);
+                        } else if (facing == BlockFace.SOUTH) {
+                            attemptIntegration(target, map);
+                            target = block.getRelative(x, -y, z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(x, y, -z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(x, -y, -z);
+                            attemptIntegration(target, map);
+                        } else if (facing == BlockFace.EAST) {
+                            target = block.getRelative(-x, y, -z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(x, -y, -z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(x, y, -z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(-x, -y, -z);
+                            attemptIntegration(target, map);
+                        } else if (facing == BlockFace.WEST) {
+                            target = block.getRelative(-x, y, z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(x, -y, z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(x, y, z);
+                            attemptIntegration(target, map);
+                            target = block.getRelative(-x, -y, z);
+                            attemptIntegration(target, map);
                         }
                     }
                 }
