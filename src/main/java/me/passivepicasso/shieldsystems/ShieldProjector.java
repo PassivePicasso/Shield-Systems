@@ -13,28 +13,27 @@ import org.bukkit.inventory.ItemStack;
 
 public class ShieldProjector {
 
-    private static final byte        NORTH     = 0x4;
+    private static final byte NORTH     = 0x4;
 
-    private static final byte        EAST      = 0x2;
+    private static final byte EAST      = 0x2;
 
-    private static final byte        SOUTH     = 0x5;
+    private static final byte SOUTH     = 0x5;
 
-    private static final byte        WEST      = 0x3;
+    private static final byte WEST      = 0x3;
 
-    private Dispenser                dispenser = null;
-    private Chest                    chestA    = null;
-    private Chest                    chestB    = null;
-    private Block                    lava      = null;
-    private BlockMatrixNode          emitterStructure;
-    private BlockMatrixNode          shieldMatrix;
-    private HashSet<BlockMatrixNode> shieldNodes;
-    private BlockFace                facing;
-    private int                      radius    = 8;
+    private Dispenser         dispenser = null;
+    private Chest             chestA    = null;
+    private Chest             chestB    = null;
+    private Block             lava      = null;
+    private BlockMatrixNode   emitterStructure;
+    private BlockMatrixNode   shieldMatrix;
+    private BlockFace         facing;
+    private int               radius    = 8;
 
-    private long                     id;
+    private long              id;
 
     public ShieldProjector( Block block ) {
-        emitterStructure = new BlockMatrixNode(block, new HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>>());
+        emitterStructure = new BlockMatrixNode(block, new HashMap<Block, BlockMatrixNode>());
         HashSet<Material> filter = new HashSet<Material>();
 
         BlockMatrixNode currentNode = emitterStructure;
@@ -106,9 +105,8 @@ public class ShieldProjector {
 
     public void activateShield() {
         generateShieldMatrix();
-        shieldNodes = shieldMatrix.getBlockMatrixNodes();
-        for (Block b : shieldMatrix.getBlockMatrix()) {
-            b.setType(Material.GLASS);
+        for (BlockMatrixNode b : shieldMatrix.getBlockMatrixNodes()) {
+            b.getBlock().setType(Material.GLASS);
         }
     }
 
@@ -238,9 +236,7 @@ public class ShieldProjector {
         }
         for (Block block : blocksToRegen) {
             if (shieldMatrix.getBlockMatrix().contains(block)) {
-                BlockMatrixNode nextMatrix = shieldMatrix.getMatrixNode(block);
-                shieldMatrix = nextMatrix != null ? nextMatrix : shieldMatrix;
-                if (nextMatrix != null) {
+                if (setFocusBlock(block)) {
                     HashSet<Material> secondaryFilter = new HashSet<Material>();
                     secondaryFilter.add(Material.AIR);
                     setNeighborType(Material.WOOL, secondaryFilter);
@@ -262,7 +258,9 @@ public class ShieldProjector {
         }
         if (shieldMatrix.getBlockMatrix().contains(target)) {
             BlockMatrixNode nextMatrix = shieldMatrix.getMatrixNode(target);
-            shieldMatrix = nextMatrix != null ? nextMatrix : shieldMatrix;
+            if (nextMatrix != null) {
+                shieldMatrix = nextMatrix;
+            }
             return nextMatrix != null;
         }
         return false;
@@ -342,7 +340,7 @@ public class ShieldProjector {
         this.radius = radius;
     }
 
-    private void attemptIntegration( Block target, HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>> map ) {
+    private void attemptIntegration( Block target, HashMap<Block, BlockMatrixNode> map ) {
         if (isAir(target)) {
             if (shieldMatrix == null) {
                 shieldMatrix = new BlockMatrixNode(target, map);
@@ -354,7 +352,7 @@ public class ShieldProjector {
 
     private void generateShieldMatrix() {
         Block block = emitterStructure.getBlock();
-        HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>> map = new HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>>();
+        HashMap<Block, BlockMatrixNode> map = new HashMap<Block, BlockMatrixNode>();
 
         if (shieldMatrix == null) {
             for (int y = 0; y <= radius; y++) {

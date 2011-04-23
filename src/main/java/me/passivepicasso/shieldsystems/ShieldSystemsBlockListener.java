@@ -22,50 +22,55 @@ public class ShieldSystemsBlockListener extends BlockListener {
 
     @Override
     public void onBlockBreak( BlockBreakEvent event ) {
-        final Block block = event.getBlock();
-        ShieldProjector projector = null;
-        for (ShieldProjector p : ShieldSystems.getPlugin().playerListener.projectors.values()) {
-            if (p.isShield(block)) {
-                projector = p;
-                break;
-            }
-        }
-        if ((projector != null) && projector.setFocusBlock(block)) {
-            HashSet<Material> filter = new HashSet<Material>();
-            filter.add(Material.GLASS);
-            projector.setNeighborType(Material.WOOL, filter);
-            filter.clear();
-            filter.add(Material.WOOL);
-            projector.setNeighborData((byte) 3, filter);
-            final ShieldProjector projectorRef = projector;
-            ShieldSystems.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    if (projectorRef.burnFuel()) {
-                        projectorRef.regenerate();
-                    }
+        if (!event.isCancelled()) {
+            final Block block = event.getBlock();
+            ShieldProjector projector = null;
+            for (ShieldProjector p : ShieldSystems.getPlugin().getProjectors().values()) {
+                if (p.isShield(block)) {
+                    projector = p;
+                    break;
                 }
-            }, 8);
+            }
+            if ((projector != null) && projector.setFocusBlock(block)) {
+                HashSet<Material> filter = new HashSet<Material>();
+                filter.add(Material.GLASS);
+                projector.setNeighborType(Material.WOOL, filter);
+                filter.clear();
+                filter.add(Material.WOOL);
+                projector.setNeighborData((byte) 3, filter);
+                final ShieldProjector projectorRef = projector;
+                ShieldSystems.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (projectorRef.burnFuel()) {
+                            projectorRef.regenerate();
+                        }
+                    }
+                }, 8);
+            }
         }
     }
 
     @Override
     public void onBlockDamage( BlockDamageEvent event ) {
-        final Block block = event.getBlock();
-        HashSet<Material> filter = new HashSet<Material>();
-        filter.add(Material.AIR);
-        ShieldProjector projector = null;
-        for (ShieldProjector p : ShieldSystems.getPlugin().playerListener.projectors.values()) {
-            if (p.isValid()) {
-                if (p.setFocusBlock(block)) {
-                    projector = p;
-                    break;
+        if (!event.isCancelled()) {
+            final Block block = event.getBlock();
+            HashSet<Material> filter = new HashSet<Material>();
+            filter.add(Material.AIR);
+            ShieldProjector projector = null;
+            for (ShieldProjector p : ShieldSystems.getPlugin().getProjectors().values()) {
+                if (p.isValid()) {
+                    if (p.setFocusBlock(block)) {
+                        projector = p;
+                        break;
+                    }
                 }
             }
-        }
-        if ((projector != null) && projector.setFocusBlock(block)) {
-            event.setInstaBreak(true);
-            onBlockBreak(new BlockBreakEvent(block, event.getPlayer()));
+
+            if ((projector != null) && projector.setFocusBlock(block)) {
+                event.setInstaBreak(true);
+                onBlockBreak(new BlockBreakEvent(block, event.getPlayer()));
+            }
         }
     }
 }

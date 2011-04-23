@@ -51,19 +51,28 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
         if (block == null) {
             return;
         }
-        if (block.getType().equals(Material.LEVER)) {
-            Lever lever = (Lever) block.getState().getData();
-            ShieldProjector sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModY(), lever.getAttachedFace().getModZ()));
-            if (sp.isValid()) {
-                projectors.put(block, sp);
-                if (!lever.isPowered()) {
-                    sp.activateShield();
+        if (!event.isCancelled()) {
+            if (block.getType().equals(Material.LEVER)) {
+                Lever lever = (Lever) block.getState().getData();
+                ShieldProjector sp;
+                if (projectors.containsKey(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModY(), lever.getAttachedFace().getModZ()))) {
+                    sp = projectors.get(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModY(), lever.getAttachedFace().getModZ()));
                 } else {
-                    sp.deactivateShield();
+                    sp = new ShieldProjector(block.getRelative(lever.getAttachedFace().getModX(), lever.getAttachedFace().getModY(), lever.getAttachedFace().getModZ()));
+                    if (!sp.isValid()) {
+                        event.getPlayer().sendMessage("Shield System is not properly configured");
+                        sp.dispose();
+                    } else {
+                        projectors.put(block, sp);
+                    }
                 }
-            } else {
-                event.getPlayer().sendMessage("Shield System is not properly configured");
-                sp.dispose();
+                if (sp != null) {
+                    if (!lever.isPowered()) {
+                        sp.activateShield();
+                    } else {
+                        sp.deactivateShield();
+                    }
+                }
             }
         }
     }
@@ -72,8 +81,8 @@ public class ShieldSystemsPlayerListener extends PlayerListener {
      * (non-Javadoc)
      * 
      * @see
-     * org.bukkit.event.player.PlayerListener#onPlayerMove(org.bukkit.event.
-     * player.PlayerMoveEvent)
+     * org.bukkit.event.player.PlayerListener#onPlayerMove(org.bukkit.event.player
+     * .PlayerMoveEvent)
      */
     @Override
     public void onPlayerMove( PlayerMoveEvent event ) {

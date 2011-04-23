@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
@@ -18,6 +19,12 @@ import org.bukkit.scheduler.BukkitScheduler;
  * @author PassivePicasso
  */
 public class ShieldSystems extends JavaPlugin {
+
+    /** The plugin. */
+    private static ShieldSystems plugin = null;
+
+    /** The log. */
+    private static Logger        log    = null;
 
     public static ShieldSystems getPlugin() {
         return plugin;
@@ -40,31 +47,26 @@ public class ShieldSystems extends JavaPlugin {
     }
 
     /** The player listener. */
-    public final ShieldSystemsPlayerListener playerListener = new ShieldSystemsPlayerListener(this);
+    private final ShieldSystemsPlayerListener playerListener = new ShieldSystemsPlayerListener(this);
 
     /** The block listener. */
-    public final ShieldSystemsBlockListener  blockListener  = new ShieldSystemsBlockListener(this);
-
-    /** Currently for Debugging Only */
-    ShieldSystemsServerListener              serverListener = new ShieldSystemsServerListener(this);
+    private final ShieldSystemsBlockListener  blockListener  = new ShieldSystemsBlockListener(this);
 
     /** The debugees. */
-    private final HashMap<Player, Boolean>   debugees       = new HashMap<Player, Boolean>();
+    private final HashMap<Player, Boolean>    debugees       = new HashMap<Player, Boolean>();
 
     /** The scheduler. */
-    private static BukkitScheduler           scheduler      = null;
-
-    /** The plugin. */
-    private static ShieldSystems             plugin         = null;
-
-    /** The log. */
-    private static Logger                    log            = null;
+    private static BukkitScheduler            scheduler      = null;
 
     /**
      * Instantiates a new shield systems.
      */
     public ShieldSystems() {
 
+    }
+
+    public HashMap<Block, ShieldProjector> getProjectors() {
+        return playerListener.getProjectors();
     }
 
     /**
@@ -89,6 +91,9 @@ public class ShieldSystems extends JavaPlugin {
      */
     @Override
     public void onDisable() {
+        for (ShieldProjector sp : plugin.playerListener.getProjectors().values()) {
+            sp.deactivateShield();
+        }
         prettyLog(Level.INFO, true, "Shutdown Completed.");
     }
 
@@ -167,7 +172,6 @@ public class ShieldSystems extends JavaPlugin {
         PluginManager pm = this.getServer().getPluginManager();
         pm.registerEvent(Event.Type.BLOCK_DAMAGE, this.blockListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.BLOCK_BREAK, this.blockListener, Priority.Normal, this);
-        pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Priority.Highest, this);
         pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.PLAYER_MOVE, this.playerListener, Priority.Normal, this);
     }

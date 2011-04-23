@@ -25,5 +25,13 @@
   		    <outputDirectory>/plugins/</outputDirectory>
   		    <destName>ShieldSystems.jar</destName>
         </file>
+        <file>
+            <source>${project.basedir}/lib/hamcrest-all-1.1.jar</source>
+            <outputDirectory>/lib/</outputDirectory>
+        </file>
+        <file>
+            <source>${project.basedir}/lib/lambdaj-2.3.1.jar</source>
+            <outputDirectory>/lib/</outputDirectory>
+        </file>
     </files>
 </assembly>

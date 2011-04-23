@@ -1,5 +1,7 @@
 package me.passivepicasso.shieldsystems;
 
+import static ch.lambdaj.Lambda.filter;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +10,9 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 
 /**
  * Warning, you must dispose this class in order to prevent a memory leak.
@@ -22,25 +27,25 @@ public class BlockMatrixNode {
     }
 
     // X, Y, Z
-    private final HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>> matrixNodes;
+    private final HashMap<Block, BlockMatrixNode> matrixNodes;
 
-    private final int                                                                   x, y, z;
+    private final int                             x, y, z;
 
-    private final String                                                                world;
+    private final String                          world;
 
-    private final Block                                                                 block;
+    private final Block                           block;
 
-    private BlockMatrixNode                                                             nextX;
-    private BlockMatrixNode                                                             previousX;
-    private BlockMatrixNode                                                             nextY;
-    private BlockMatrixNode                                                             previousY;
-    private BlockMatrixNode                                                             nextZ;
-    private BlockMatrixNode                                                             previousZ;
+    private BlockMatrixNode                       nextX;
+    private BlockMatrixNode                       previousX;
+    private BlockMatrixNode                       nextY;
+    private BlockMatrixNode                       previousY;
+    private BlockMatrixNode                       nextZ;
+    private BlockMatrixNode                       previousZ;
 
-    private boolean                                                                     isComplete;
-    private Set<Material>                                                               filter;
+    private boolean                               isComplete;
+    private Set<Material>                         filter;
 
-    public BlockMatrixNode( Block block, HashMap<Integer, HashMap<Integer, HashMap<Integer, BlockMatrixNode>>> matrixNodes ) {
+    public BlockMatrixNode( Block block, HashMap<Block, BlockMatrixNode> matrixNodes ) {
         this.matrixNodes = matrixNodes;
         isComplete = false;
         world = block.getWorld().getName();
@@ -48,49 +53,38 @@ public class BlockMatrixNode {
         x = block.getX();
         y = block.getY();
         z = block.getZ();
-        if (this.matrixNodes.containsKey(x)) {
-            if (this.matrixNodes.get(x).containsKey(y)) {
-                if (this.matrixNodes.get(x).get(y).containsKey(z)) {
-                    return;
-                } else {
-                    this.matrixNodes.get(x).get(y).put(z, this);
-                }
-            } else {
-                this.matrixNodes.get(x).put(y, new HashMap<Integer, BlockMatrixNode>());
-                this.matrixNodes.get(x).get(y).put(z, this);
-            }
+        if (matrixNodes.containsKey(block)) {
+            return;
         } else {
-            this.matrixNodes.put(x, new HashMap<Integer, HashMap<Integer, BlockMatrixNode>>());
-            this.matrixNodes.get(x).put(y, new HashMap<Integer, BlockMatrixNode>());
-            this.matrixNodes.get(x).get(y).put(z, this);
+            matrixNodes.put(block, this);
         }
-        if (this.matrixNodes.containsKey(x + 1) && this.matrixNodes.get(x + 1).containsKey(y) && this.matrixNodes.get(x + 1).get(y).containsKey(z)) {
-            BlockMatrixNode nextX = this.matrixNodes.get(x + 1).get(y).get(z);
+        if (this.matrixNodes.containsKey(block.getRelative(1, 0, 0))) {
+            BlockMatrixNode nextX = this.matrixNodes.get(block.getRelative(1, 0, 0));
             setSouth(nextX);
             nextX.setNorth(this);
         }
-        if (this.matrixNodes.containsKey(x - 1) && this.matrixNodes.get(x - 1).containsKey(y) && this.matrixNodes.get(x - 1).get(y).containsKey(z)) {
-            BlockMatrixNode previousX = this.matrixNodes.get(x - 1).get(y).get(z);
+        if (this.matrixNodes.containsKey(block.getRelative(-1, 0, 0))) {
+            BlockMatrixNode previousX = this.matrixNodes.get(block.getRelative(-1, 0, 0));
             setNorth(previousX);
             previousX.setSouth(this);
         }
-        if (this.matrixNodes.containsKey(x) && this.matrixNodes.get(x).containsKey(y + 1) && this.matrixNodes.get(x).get(y + 1).containsKey(z)) {
-            BlockMatrixNode nextY = this.matrixNodes.get(x).get(y + 1).get(z);
+        if (this.matrixNodes.containsKey(block.getRelative(0, 1, 0))) {
+            BlockMatrixNode nextY = this.matrixNodes.get(block.getRelative(0, 1, 0));
             setUp(nextY);
             nextY.setDown(this);
         }
-        if (this.matrixNodes.containsKey(x) && this.matrixNodes.get(x).containsKey(y - 1) && this.matrixNodes.get(x).get(y - 1).containsKey(z)) {
-            BlockMatrixNode previousY = this.matrixNodes.get(x).get(y - 1).get(z);
+        if (this.matrixNodes.containsKey(block.getRelative(0, -1, 0))) {
+            BlockMatrixNode previousY = this.matrixNodes.get(block.getRelative(0, -1, 0));
             setDown(previousY);
             previousY.setUp(this);
         }
-        if (this.matrixNodes.containsKey(x) && this.matrixNodes.get(x).containsKey(y) && this.matrixNodes.get(x).get(y).containsKey(z + 1)) {
-            BlockMatrixNode nextZ = this.matrixNodes.get(x).get(y).get(z + 1);
+        if (this.matrixNodes.containsKey(block.getRelative(0, 0, 1))) {
+            BlockMatrixNode nextZ = this.matrixNodes.get(block.getRelative(0, 0, 1));
             setWest(nextZ);
             nextZ.setEast(this);
         }
-        if (this.matrixNodes.containsKey(x) && this.matrixNodes.get(x).containsKey(y) && this.matrixNodes.get(x).get(y).containsKey(z - 1)) {
-            BlockMatrixNode previousZ = this.matrixNodes.get(x).get(y).get(z - 1);
+        if (this.matrixNodes.containsKey(block.getRelative(0, 0, -1))) {
+            BlockMatrixNode previousZ = this.matrixNodes.get(block.getRelative(0, 0, -1));
             setEast(previousZ);
             previousZ.setWest(this);
         }
@@ -246,27 +240,11 @@ public class BlockMatrixNode {
     }
 
     public ArrayList<Block> getBlockMatrix() {
-        ArrayList<Block> blocks = new ArrayList<Block>();
-        for (Integer x : matrixNodes.keySet()) {
-            for (Integer y : matrixNodes.get(x).keySet()) {
-                for (Integer z : matrixNodes.get(x).get(y).keySet()) {
-                    blocks.add(matrixNodes.get(x).get(y).get(z).getBlock());
-                }
-            }
-        }
-        return blocks;
+        return new ArrayList<Block>(matrixNodes.keySet());
     }
 
     public HashSet<BlockMatrixNode> getBlockMatrixNodes() {
-        HashSet<BlockMatrixNode> matrix = new HashSet<BlockMatrixNode>();
-        for (Integer x : matrixNodes.keySet()) {
-            for (Integer y : matrixNodes.get(x).keySet()) {
-                for (Integer z : matrixNodes.get(x).get(y).keySet()) {
-                    matrix.add(matrixNodes.get(x).get(y).get(z));
-                }
-            }
-        }
-        return matrix;
+        return new HashSet<BlockMatrixNode>(matrixNodes.values());
     }
 
     /**
@@ -278,36 +256,29 @@ public class BlockMatrixNode {
      *            either Y or Z
      * @return set of
      */
-    public Set<BlockMatrixNode> getBlockPlane( Axis axis, int value ) {
-        HashSet<BlockMatrixNode> nodes = new HashSet<BlockMatrixNode>();
-        switch (axis) {
-            case X:
-                for (Integer y : matrixNodes.get(value).keySet()) {
-                    for (Integer z : matrixNodes.get(value).get(y).keySet()) {
-                        nodes.add(matrixNodes.get(value).get(y).get(z));
+    public Set<BlockMatrixNode> getBlockPlane( final Axis axis, final int value ) {
+        Matcher<BlockMatrixNode> onAxis = new BaseMatcher<BlockMatrixNode>() {
+            @Override
+            public void describeTo( Description description ) {
+            }
+
+            @Override
+            public boolean matches( Object item ) {
+                if (item.getClass().equals(BlockMatrixNode.class)) {
+                    BlockMatrixNode node = (BlockMatrixNode) item;
+                    switch (axis) {
+                        case X:
+                            return node.x == value;
+                        case Y:
+                            return node.y == value;
+                        case Z:
+                            return node.z == value;
                     }
                 }
-                break;
-            case Y:
-                for (Integer x : matrixNodes.keySet()) {
-                    if (matrixNodes.get(x).containsKey(value)) {
-                        for (Integer z : matrixNodes.get(x).get(value).keySet()) {
-                            nodes.add(matrixNodes.get(x).get(y).get(z));
-                        }
-                    }
-                }
-                break;
-            case Z:
-                for (Integer x : matrixNodes.keySet()) {
-                    for (Integer y : matrixNodes.get(x).keySet()) {
-                        if (matrixNodes.get(x).get(y).containsKey(value)) {
-                            nodes.add(matrixNodes.get(x).get(y).get(value));
-                        }
-                    }
-                }
-                break;
-        }
-        return nodes;
+                return false;
+            }
+        };
+        return new HashSet<BlockMatrixNode>(filter(onAxis, matrixNodes.values()));
     }
 
     public BlockMatrixNode getDown() {
@@ -329,14 +300,7 @@ public class BlockMatrixNode {
      * @return
      */
     public BlockMatrixNode getMatrixNode( Block block ) {
-        if (matrixNodes.containsKey(block.getX())) {
-            if (matrixNodes.get(block.getX()).containsKey(block.getY())) {
-                if (matrixNodes.get(block.getX()).get(block.getY()).containsKey(block.getZ())) {
-                    return matrixNodes.get(block.getX()).get(block.getY()).get(block.getZ());
-                }
-            }
-        }
-        return null;
+        return matrixNodes.get(block);
     }
 
     public BlockMatrixNode getNorth() {
@@ -501,31 +465,5 @@ public class BlockMatrixNode {
         } else {
             this.nextZ = nextZ;
         }
-    }
-
-    @SuppressWarnings("unused")
-    private BlockMatrixNode addOrGetNode( BlockMatrixNode node ) {
-        if (matrixNodes.containsKey(node.x)) {
-            HashMap<Integer, HashMap<Integer, BlockMatrixNode>> xNode = matrixNodes.get(node.x);
-            if (xNode.containsKey(node.y)) {
-                HashMap<Integer, BlockMatrixNode> xyNode = xNode.get(node.y);
-                if (xyNode.containsKey(node.z)) {
-                    return xyNode.get(node.z);
-                } else {
-                    xyNode.put(node.z, node);
-                }
-            } else {
-                xNode.put(node.y, new HashMap<Integer, BlockMatrixNode>());
-                HashMap<Integer, BlockMatrixNode> xyNode = xNode.get(node.y);
-                xyNode.put(node.z, node);
-            }
-        } else {
-            matrixNodes.put(node.x, new HashMap<Integer, HashMap<Integer, BlockMatrixNode>>());
-            HashMap<Integer, HashMap<Integer, BlockMatrixNode>> xNode = matrixNodes.get(node.x);
-            xNode.put(node.y, new HashMap<Integer, BlockMatrixNode>());
-            HashMap<Integer, BlockMatrixNode> xyNode = xNode.get(node.y);
-            xyNode.put(node.z, node);
-        }
-        return node;
     }
 }
