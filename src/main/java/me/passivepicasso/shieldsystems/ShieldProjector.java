@@ -1,51 +1,78 @@
 package me.passivepicasso.shieldsystems;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
+import me.passivepicasso.util.BlockMatrixNode;
+import me.passivepicasso.util.BlockMatrixNode.Axis;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ShieldProjector {
 
-    private static final byte NORTH     = 0x4;
+    private static final byte                       NORTH          = 0x4;
 
-    private static final byte EAST      = 0x2;
+    private static final byte                       EAST           = 0x2;
 
-    private static final byte SOUTH     = 0x5;
+    private static final byte                       SOUTH          = 0x5;
 
-    private static final byte WEST      = 0x3;
+    private static final byte                       WEST           = 0x3;
 
-    private Dispenser         dispenser = null;
-    private Chest             chestA    = null;
-    private Chest             chestB    = null;
-    private Block             lava      = null;
-    private BlockMatrixNode   emitterStructure;
-    private BlockMatrixNode   shieldMatrix;
-    private BlockFace         facing;
-    private int               radius    = 8;
+    private static final HashMap<Material, Integer> fuelEfficiency = new HashMap<Material, Integer>();
 
-    private long              id;
+    static {
+        fuelEfficiency.put(Material.DIRT, 1);
+        fuelEfficiency.put(Material.SAND, 2);
+        fuelEfficiency.put(Material.COAL, 10);
+        fuelEfficiency.put(Material.BOOKSHELF, 4);
+        fuelEfficiency.put(Material.WOOD, 2);
+        fuelEfficiency.put(Material.LOG, 2);
+        fuelEfficiency.put(Material.LAVA_BUCKET, 10);
+        fuelEfficiency.put(Material.DIAMOND, 50);
+        fuelEfficiency.put(Material.FENCE, 4);
+        fuelEfficiency.put(Material.LAPIS_BLOCK, 25);
+        fuelEfficiency.put(Material.NETHERRACK, 2);
+        fuelEfficiency.put(Material.OBSIDIAN, 20);
+        fuelEfficiency.put(Material.REDSTONE, 3);
+        fuelEfficiency.put(Material.SIGN, 2);
+        fuelEfficiency.put(Material.STICK, 2);
+        fuelEfficiency.put(Material.SULPHUR, 5);
+        fuelEfficiency.put(Material.TORCH, 10);
+    }
+
+    private int                                     availablePower = 0;
+    private Dispenser                               dispenser      = null;
+    private Chest                                   chestA         = null;
+    private Chest                                   chestB         = null;
+    private BlockMatrixNode                         emitterStructure;
+    private BlockMatrixNode                         shieldMatrix;
+    private BlockFace                               facing;
+    private int                                     radius         = 8;
+    private String                                  worldName      = "";
+
+    private long                                    id;
 
     public ShieldProjector( Block block ) {
+        this.worldName = block.getWorld().getName();
         emitterStructure = new BlockMatrixNode(block, new HashMap<Block, BlockMatrixNode>());
         HashSet<Material> filter = new HashSet<Material>();
 
-        BlockMatrixNode currentNode = emitterStructure;
-        if (currentNode.getBlock().getTypeId() != Material.IRON_BLOCK.getId()) {
+        if ( emitterStructure.getBlock().getTypeId() != Material.IRON_BLOCK.getId() ) {
             creationFailed();
             return;
         }
 
         filter.add(Material.DISPENSER);
-        currentNode.setFilter(filter);
-        if (currentNode.addUp()) {
-            dispenser = (Dispenser) currentNode.getUp().getBlock().getState();
+        emitterStructure.setFilter(filter);
+        if ( emitterStructure.addUp() ) {
+            dispenser = (Dispenser) emitterStructure.getUp().getBlock().getState();
         } else {
             creationFailed();
             return;
@@ -53,72 +80,90 @@ public class ShieldProjector {
         filter.clear();
         filter.add(Material.LAVA);
         filter.add(Material.STATIONARY_LAVA);
-        currentNode.setFilter(filter);
+        emitterStructure.setFilter(filter);
 
         BlockMatrixNode lavaNode = null;
-        if ((dispenser.getRawData() == SOUTH)) {
-            if (currentNode.addSouth()) {
-                lava = currentNode.getSouth().getBlock();
-                lavaNode = currentNode.getSouth();
+        Block lava = null;
+        if ( dispenser.getRawData() == SOUTH ) {
+            if ( emitterStructure.addSouth() ) {
+                lava = emitterStructure.getSouth().getBlock();
+                lavaNode = emitterStructure.getSouth();
                 facing = BlockFace.SOUTH;
             }
-        } else if ((dispenser.getRawData() == NORTH)) {
-            if (currentNode.addNorth()) {
-                lava = currentNode.getNorth().getBlock();
-                lavaNode = currentNode.getNorth();
+        } else if ( dispenser.getRawData() == NORTH ) {
+            if ( emitterStructure.addNorth() ) {
+                lava = emitterStructure.getNorth().getBlock();
+                lavaNode = emitterStructure.getNorth();
                 facing = BlockFace.NORTH;
             }
-        } else if ((dispenser.getRawData() == WEST)) {
-            if (currentNode.addWest()) {
-                lava = currentNode.getWest().getBlock();
-                lavaNode = currentNode.getWest();
+        } else if ( dispenser.getRawData() == WEST ) {
+            if ( emitterStructure.addWest() ) {
+                lava = emitterStructure.getWest().getBlock();
+                lavaNode = emitterStructure.getWest();
                 facing = BlockFace.WEST;
             }
-        } else if ((dispenser.getRawData() == EAST)) {
-            if (currentNode.addEast()) {
-                lava = currentNode.getEast().getBlock();
-                lavaNode = currentNode.getEast();
+        } else if ( dispenser.getRawData() == EAST ) {
+            if ( emitterStructure.addEast() ) {
+                lava = emitterStructure.getEast().getBlock();
+                lavaNode = emitterStructure.getEast();
                 facing = BlockFace.EAST;
             }
         }
 
         filter.clear();
-        currentNode.setFilter(null);
-        if ((lava == null) || (lavaNode == null)) {
+        emitterStructure.setFilter(null);
+        if ( lava == null || lavaNode == null ) {
             creationFailed();
             return;
         }
 
-        if (!locateChest()) {
+        if ( !locateChest() ) {
             creationFailed();
             return;
         }
 
-        if (!verifyLavaContainmentIntegrity(lavaNode)) {
+        if ( !verifyLavaContainmentIntegrity(lavaNode) ) {
             creationFailed();
             return;
         }
 
-        id = (block.getX() * block.getY() * block.getZ()) + (lava.getX() + lava.getY() + lava.getZ()) * dispenser.getX() * dispenser.getY() + (dispenser.getZ() * dispenser.getZ());
+        id = block.getX() * block.getY() * block.getZ() + (lava.getX() + lava.getY() + lava.getZ()) * dispenser.getX() * dispenser.getY() + dispenser.getZ()
+                * dispenser.getZ();
         emitterStructure.complete();
     }
 
     public void activateShield() {
-        if (shieldMatrix == null) {
+        if ( shieldMatrix == null ) {
             generateShieldMatrix();
         }
-        for (BlockMatrixNode b : shieldMatrix.getBlockMatrixNodes()) {
-            b.getBlock().setType(Material.GLASS);
+        int currentPlane = emitterStructure.getBlock().getLocation().getBlockY() - getRadius() - 2;
+        int maxPlane = emitterStructure.getBlock().getLocation().getBlockY() + getRadius() + 2;
+        shieldMatrix.setFilter(new HashSet<Material>());
+        shieldMatrix.getFilter().add(Material.AIR);
+        while (currentPlane < maxPlane) {
+            Set<BlockMatrixNode> regenSet = shieldMatrix.getBlockPlane(Axis.Z, currentPlane++);
+            int remainingFields = regenSet.size();
+            for (BlockMatrixNode node : regenSet) {
+                if ( burnFuel() ) {
+                    if ( remainingFields > 0 && availablePower > 0 ) {
+                        node.getBlock().setTypeId(Material.GLASS.getId());
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
         }
     }
 
     public boolean burnFuel() {
         while (true) {
-            if (((chestA == null) && (chestB == null)) || (dispenser.getInventory().firstEmpty() == -1)) {
+            if ( chestA == null && chestB == null || dispenser.getInventory().firstEmpty() == -1 ) {
                 break;
-            } else if ((chestA != null) && chestA.getInventory().contains(Material.DIRT)) {
+            } else if ( chestA != null && chestA.getInventory().contains(Material.DIRT) ) {
                 int index = chestA.getInventory().first(Material.DIRT);
-                if (index != -1) {
+                if ( index != -1 ) {
                     ItemStack stack = chestA.getInventory().getItem(index);
                     chestA.getInventory().remove(stack);
                     HashMap<Integer, ItemStack> leftOvers = dispenser.getInventory().addItem(stack);
@@ -126,9 +171,9 @@ public class ShieldProjector {
                         chestA.getInventory().addItem(is);
                     }
                 }
-            } else if ((chestB != null) && chestB.getInventory().contains(Material.DIRT)) {
+            } else if ( chestB != null && chestB.getInventory().contains(Material.DIRT) ) {
                 int index = chestB.getInventory().first(Material.DIRT);
-                if (index != -1) {
+                if ( index != -1 ) {
                     ItemStack stack = chestB.getInventory().getItem(index);
                     chestB.getInventory().remove(stack);
                     HashMap<Integer, ItemStack> leftOvers = dispenser.getInventory().addItem(stack);
@@ -136,15 +181,29 @@ public class ShieldProjector {
                         chestB.getInventory().addItem(is);
                     }
                 }
-            } else if ((chestA != null) && chestA.getInventory().contains(Material.DIRT)) {
+            } else if ( chestA != null && chestA.getInventory().contains(Material.DIRT) ) {
                 break;
-            } else if ((chestB != null) && !chestB.getInventory().contains(Material.DIRT)) {
+            } else if ( chestB != null && !chestB.getInventory().contains(Material.DIRT) ) {
                 break;
             }
         }
-        if (dispenser.getInventory().contains(Material.DIRT)) {
-            dispenser.dispense();
-            return true;
+        for (Material fuelType : fuelEfficiency.keySet()) {
+            Inventory inventory = dispenser.getInventory();
+            if ( inventory.contains(fuelType) ) {
+                int location = inventory.first(fuelType.getId());
+                Location dispenseLocation = dispenser.getBlock().getRelative(facing).getLocation();
+                ItemStack stack = inventory.getItem(location);
+                int amount = stack.getAmount() - 1;
+
+                stack.setAmount(1);
+                ShieldSystems.getPlugin().getServer().getWorld(worldName).dropItem(dispenseLocation, stack);
+
+                stack.setAmount(amount);
+                inventory.setItem(location, stack);
+
+                availablePower += fuelEfficiency.get(fuelType);
+                return true;
+            }
         }
         return false;
     }
@@ -160,50 +219,44 @@ public class ShieldProjector {
     }
 
     public void dispose() {
-        if (shieldMatrix != null) {
+        if ( shieldMatrix != null ) {
             shieldMatrix.dispose();
         }
-        if (emitterStructure != null) {
+        if ( emitterStructure != null ) {
             emitterStructure.dispose();
         }
     }
 
     public double distance( Block target ) {
-        int x = emitterStructure.getBlock().getX();
-        int y = emitterStructure.getBlock().getY();
-        int z = emitterStructure.getBlock().getZ();
-        int xd = x - target.getX();
-        int yd = y - target.getY();
-        int zd = z - target.getZ();
-        return Math.sqrt(Math.pow(xd, 2) + Math.pow(yd, 2) + Math.pow(zd, 2));
+        Location loc = emitterStructure.getBlock().getLocation();
+        Location tar = target.getLocation();
+        int x = loc.getBlockX();
+        int y = loc.getBlockY();
+        int z = loc.getBlockZ();
+        int xd = x - tar.getBlockX();
+        int yd = y - tar.getBlockY();
+        int zd = z - tar.getBlockZ();
+        return Math.sqrt(xd * xd + yd * yd + zd * zd);
     }
 
     public double distanceFromShield( Location point ) {
-        int x = shieldMatrix.getBlock().getX();
-        int y = shieldMatrix.getBlock().getY();
-        int z = shieldMatrix.getBlock().getZ();
-        double xd = x - point.getX();
-        double yd = y - point.getY();
-        double zd = z - point.getZ();
+        int x = shieldMatrix.getBlock().getLocation().getBlockX();
+        int y = shieldMatrix.getBlock().getLocation().getBlockY();
+        int z = shieldMatrix.getBlock().getLocation().getBlockZ();
+        double xd = x - point.getBlockX();
+        double yd = y - point.getBlockY();
+        double zd = z - point.getBlockZ();
         return Math.sqrt(Math.pow(xd, 2) + Math.pow(yd, 2) + Math.pow(zd, 2));
     }
 
     @Override
     public boolean equals( Object obj ) {
 
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
+        if ( this == obj ) { return true; }
+        if ( obj == null ) { return false; }
+        if ( getClass() != obj.getClass() ) { return false; }
         ShieldProjector other = (ShieldProjector) obj;
-        if (id != other.id) {
-            return false;
-        }
+        if ( id != other.id ) { return false; }
         return true;
     }
 
@@ -215,7 +268,7 @@ public class ShieldProjector {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (id ^ (id >>> 32));
+        result = prime * result + (int) (id ^ id >>> 32);
         return result;
     }
 
@@ -232,13 +285,13 @@ public class ShieldProjector {
         filter.add(Material.WOOL);
         HashSet<Block> blocksToRegen = new HashSet<Block>();
         for (Block block : shieldMatrix.getBlockMatrix()) {
-            if (filter.contains(block.getType())) {
+            if ( filter.contains(block.getType()) ) {
                 blocksToRegen.add(block);
             }
         }
         for (Block block : blocksToRegen) {
-            if (shieldMatrix.getBlockMatrix().contains(block)) {
-                if (setFocusBlock(block)) {
+            if ( shieldMatrix.getBlockMatrix().contains(block) ) {
+                if ( setFocusBlock(block) ) {
                     HashSet<Material> secondaryFilter = new HashSet<Material>();
                     secondaryFilter.add(Material.AIR);
                     setNeighborType(Material.WOOL, secondaryFilter);
@@ -255,12 +308,10 @@ public class ShieldProjector {
      * @return true if block has been targeted, otherwise false
      */
     public boolean setFocusBlock( Block target ) {
-        if (shieldMatrix == null) {
-            return false;
-        }
-        if (shieldMatrix.getBlockMatrix().contains(target)) {
+        if ( shieldMatrix == null ) { return false; }
+        if ( shieldMatrix.getBlockMatrix().contains(target) ) {
             BlockMatrixNode nextMatrix = shieldMatrix.getMatrixNode(target);
-            if (nextMatrix != null) {
+            if ( nextMatrix != null ) {
                 shieldMatrix = nextMatrix;
             }
             return nextMatrix != null;
@@ -272,29 +323,26 @@ public class ShieldProjector {
      * sets neighboring blocks data.
      * neighboring blocks are the 9 blocks that completely encapsulate a block.
      * 
-     * @param type
      */
     public void setNeighborData( byte data, HashSet<Material> filter ) {
-        if (filter == null) {
-            return;
-        }
+        if ( filter == null ) { return; }
         shieldMatrix.setFilter(filter);
-        if (shieldMatrix.hasFilteredNorth()) {
+        if ( shieldMatrix.hasFilteredNorth() ) {
             shieldMatrix.getNorth().getBlock().setData(data);
         }
-        if (shieldMatrix.hasFilteredEast()) {
+        if ( shieldMatrix.hasFilteredEast() ) {
             shieldMatrix.getEast().getBlock().setData(data);
         }
-        if (shieldMatrix.hasFilteredSouth()) {
+        if ( shieldMatrix.hasFilteredSouth() ) {
             shieldMatrix.getSouth().getBlock().setData(data);
         }
-        if (shieldMatrix.hasFilteredWest()) {
+        if ( shieldMatrix.hasFilteredWest() ) {
             shieldMatrix.getWest().getBlock().setData(data);
         }
-        if (shieldMatrix.hasFilteredDown()) {
+        if ( shieldMatrix.hasFilteredDown() ) {
             shieldMatrix.getDown().getBlock().setData(data);
         }
-        if (shieldMatrix.hasFilteredUp()) {
+        if ( shieldMatrix.hasFilteredUp() ) {
             shieldMatrix.getUp().getBlock().setData(data);
         }
         shieldMatrix.setFilter(null);
@@ -311,27 +359,25 @@ public class ShieldProjector {
      *            set of placeable block materials to exclude from the change
      */
     public void setNeighborType( Material type, HashSet<Material> filter ) {
-        if (filter == null) {
-            return;
-        }
+        if ( filter == null ) { return; }
         shieldMatrix.setFilter(filter);
-        if (type.isBlock()) {
-            if (shieldMatrix.hasFilteredNorth()) {
+        if ( type.isBlock() ) {
+            if ( shieldMatrix.hasFilteredNorth() ) {
                 shieldMatrix.getNorth().getBlock().setType(type);
             }
-            if (shieldMatrix.hasFilteredEast()) {
+            if ( shieldMatrix.hasFilteredEast() ) {
                 shieldMatrix.getEast().getBlock().setType(type);
             }
-            if (shieldMatrix.hasFilteredSouth()) {
+            if ( shieldMatrix.hasFilteredSouth() ) {
                 shieldMatrix.getSouth().getBlock().setType(type);
             }
-            if (shieldMatrix.hasFilteredWest()) {
+            if ( shieldMatrix.hasFilteredWest() ) {
                 shieldMatrix.getWest().getBlock().setType(type);
             }
-            if (shieldMatrix.hasFilteredDown()) {
+            if ( shieldMatrix.hasFilteredDown() ) {
                 shieldMatrix.getDown().getBlock().setType(type);
             }
-            if (shieldMatrix.hasFilteredUp()) {
+            if ( shieldMatrix.hasFilteredUp() ) {
                 shieldMatrix.getUp().getBlock().setType(type);
             }
         }
@@ -343,8 +389,8 @@ public class ShieldProjector {
     }
 
     private void attemptIntegration( Block target, HashMap<Block, BlockMatrixNode> map ) {
-        if (isAir(target)) {
-            if (shieldMatrix == null) {
+        if ( isAir(target) ) {
+            if ( shieldMatrix == null ) {
                 shieldMatrix = new BlockMatrixNode(target, map);
             } else {
                 new BlockMatrixNode(target, map);
@@ -353,25 +399,23 @@ public class ShieldProjector {
     }
 
     private void generateShieldMatrix() {
-        if ((shieldMatrix != null) && shieldMatrix.isComplete()) {
-            return;
-        }
+        if ( shieldMatrix != null && shieldMatrix.isComplete() ) { return; }
         Block block = emitterStructure.getBlock();
         HashMap<Block, BlockMatrixNode> map = new HashMap<Block, BlockMatrixNode>();
 
-        if (shieldMatrix == null) {
+        if ( shieldMatrix == null ) {
             for (int y = 0; y <= radius; y++) {
                 for (int x = 0; x <= radius; x++) {
                     for (int z = 0; z <= radius; z++) {
                         Block target = block.getRelative(x, y, z);
                         double d = distance(target);
-                        if (d > (radius + 1)) {
+                        if ( d > radius + 1 ) {
                             continue;
                         }
-                        if (d < (radius - 1)) {
+                        if ( d < radius - 1 ) {
                             continue;
                         }
-                        if (facing == BlockFace.NORTH) {
+                        if ( facing == BlockFace.NORTH ) {
                             target = block.getRelative(-x, y, z);
                             attemptIntegration(target, map);
                             target = block.getRelative(-x, -y, z);
@@ -380,7 +424,7 @@ public class ShieldProjector {
                             attemptIntegration(target, map);
                             target = block.getRelative(-x, -y, -z);
                             attemptIntegration(target, map);
-                        } else if (facing == BlockFace.SOUTH) {
+                        } else if ( facing == BlockFace.SOUTH ) {
                             attemptIntegration(target, map);
                             target = block.getRelative(x, -y, z);
                             attemptIntegration(target, map);
@@ -388,7 +432,7 @@ public class ShieldProjector {
                             attemptIntegration(target, map);
                             target = block.getRelative(x, -y, -z);
                             attemptIntegration(target, map);
-                        } else if (facing == BlockFace.EAST) {
+                        } else if ( facing == BlockFace.EAST ) {
                             target = block.getRelative(-x, y, -z);
                             attemptIntegration(target, map);
                             target = block.getRelative(x, -y, -z);
@@ -397,7 +441,7 @@ public class ShieldProjector {
                             attemptIntegration(target, map);
                             target = block.getRelative(-x, -y, -z);
                             attemptIntegration(target, map);
-                        } else if (facing == BlockFace.WEST) {
+                        } else if ( facing == BlockFace.WEST ) {
                             target = block.getRelative(-x, y, z);
                             attemptIntegration(target, map);
                             target = block.getRelative(x, -y, z);
@@ -423,23 +467,23 @@ public class ShieldProjector {
         HashSet<Material> filter = new HashSet<Material>();
         filter.add(Material.CHEST);
         dispenser.setFilter(filter);
-        if ((facing == BlockFace.NORTH) || (facing == BlockFace.SOUTH)) {
-            if (dispenser.addWest()) {
+        if ( facing == BlockFace.NORTH || facing == BlockFace.SOUTH ) {
+            if ( dispenser.addWest() ) {
                 chestA = (Chest) dispenser.getWest().getBlock().getState();
             }
-            if (dispenser.addEast()) {
+            if ( dispenser.addEast() ) {
                 chestB = (Chest) dispenser.getEast().getBlock().getState();
             }
-        } else if ((facing == BlockFace.EAST) || (facing == BlockFace.WEST)) {
-            if (dispenser.addSouth()) {
+        } else if ( facing == BlockFace.EAST || facing == BlockFace.WEST ) {
+            if ( dispenser.addSouth() ) {
                 chestA = (Chest) dispenser.getSouth().getBlock().getState();
             }
-            if (dispenser.addNorth()) {
+            if ( dispenser.addNorth() ) {
                 chestB = (Chest) dispenser.getNorth().getBlock().getState();
             }
         }
         dispenser.setFilter(null);
-        return (chestA != null) || (chestB != null);
+        return chestA != null || chestB != null;
     }
 
     private boolean verifyLavaContainmentIntegrity( BlockMatrixNode lavaNode ) {

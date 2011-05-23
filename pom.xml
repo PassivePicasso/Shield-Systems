@@ -18,6 +18,11 @@
   		<artifactId>lambdaj</artifactId>
   		<version>2.3.1</version>
   	</dependency>
+  	<dependency>
+  		<groupId>me.passivepicasso.util</groupId>
+  		<artifactId>me.passivepicasso.util</artifactId>
+  		<version>0.1.0</version>
+  	</dependency>
   </dependencies>
     <build>
         <plugins>
@@ -61,5 +66,6 @@
 			</plugin>
 
         </plugins>
+        <finalName>ShieldSystems</finalName>
     </build>
 </project>

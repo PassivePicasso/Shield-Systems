@@ -1,11 +1,11 @@
 package me.passivepicasso.shieldsystems;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class DomeEmitter {
 
@@ -199,8 +199,7 @@ public class DomeEmitter {
         int xd = x - target.getX();
         int yd = y - target.getY();
         int zd = z - target.getZ();
-        double distance = Math.sqrt(Math.pow(xd, 2) + Math.pow(yd, 2) + Math.pow(zd, 2));
-        return distance;
+        return Math.sqrt(Math.pow(xd, 2) + Math.pow(yd, 2) + Math.pow(zd, 2));
     }
 
     private boolean isAir( Block block ) {

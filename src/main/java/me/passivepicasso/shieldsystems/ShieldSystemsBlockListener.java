@@ -14,6 +14,7 @@ import org.bukkit.event.block.BlockListener;
  * @author PassivePicasso
  */
 public class ShieldSystemsBlockListener extends BlockListener {
+
     private final ShieldSystems plugin;
 
     public ShieldSystemsBlockListener( final ShieldSystems plugin ) {
@@ -46,7 +47,7 @@ public class ShieldSystemsBlockListener extends BlockListener {
                             projectorRef.regenerate();
                         }
                     }
-                }, 8);
+                }, 4);
             }
         }
     }
